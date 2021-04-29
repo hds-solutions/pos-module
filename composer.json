@@ -1,6 +1,6 @@
 {
-    "name": "finpar/empty-module",
-    "description": "Empty module",
+    "name": "finpar/pos-module",
+    "description": "POS module",
     "type": "laravel-module",
     "license": "GNU GPLv3",
     "authors": [
@@ -16,20 +16,20 @@
     },
     "autoload": {
         "psr-4": {
-            "HDSSolutions\\Finpar\\": "src/",
+            "HDSSolutions\\Finpar\\": "app/",
             "HDSSolutions\\Finpar\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "src/helpers.php"
+            "app/helpers.php"
         ]
     },
     "extra": {
         "laravel": {
             "providers": [
-                "HDSSolutions\\Finpar\\EmptyModuleServiceProvider"
+                "HDSSolutions\\Finpar\\POSModuleServiceProvider"
             ],
             "aliases": {
-                "Empty": "HDSSolutions\\Finpar\\Empty\\Facade"
+                "POS": "HDSSolutions\\Finpar\\POS\\Facade"
             }
         }
     }
