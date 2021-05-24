@@ -27,31 +27,17 @@ use HDSSolutions\Finpar\Models\ReceipmentPayment;
 use HDSSolutions\Finpar\Models\Variant;
 use Illuminate\Support\Facades\DB;
 
-class POSController extends Controller {
-
-    public function __construct() {
-        // check if POS is configured
-        $this->middleware(function(Request $request, Closure $next) {
-            // check POS configuration
-            if ( pos_settings()->currency() === null ||
-                 pos_settings()->branch() === null ||
-                 pos_settings()->warehouse() === null ||
-                 pos_settings()->cashBook() === null )
-                // redirect to pos index
-                return redirect()->route('backend.pos');
-            // continue normal execution
-            return $next($request);
-        })->except([ 'index', 'session' ]);
-    }
+class PaymentController extends Controller {
 
     public function index(Request $request) {
+return redirect()->route('backend.payment.create');
         // load branches from current company
         $branches = backend()->company()->branches()->with([ 'warehouses.locators' ])->get();
         // load cashBooks
         $cashBooks = CashBook::all();
 
         // return configure POS view
-        return view('pos::pos.index', compact('branches', 'cashBooks'));
+        return view('pos::payment.index', compact('branches', 'cashBooks'));
     }
 
     public function session(Request $request) {
@@ -64,23 +50,20 @@ class POSController extends Controller {
         );
 
         // redirect to POS.create
-        return redirect()->route('backend.pos.create');
+        return redirect()->route('backend.payment.create');
     }
 
     public function create(Request $request) {
-        // load cash_books
-        $customers = Customer::with([
+        // load customers with pending invoices
+        $customers = Customer::whereHas('invoices',
             // 'addresses',
-        ])->get();
-        // load products
-        $products = Product::with([
-            'images',
-            'prices',
-            'variants.prices',
-        ])->get();
+            fn($invoice) => $invoice->completed()->paid(false)->with([
+                'currency',
+            ]),
+        )->get();
 
         // show main form
-        return view('pos::pos.create', compact('customers', 'products'));
+        return view('pos::payment.create', compact('customers'));
     }
 
     public function store(Request $request) {
@@ -132,15 +115,15 @@ class POSController extends Controller {
         DB::commit();
 
         // go to payment window
-        return redirect()->route('backend.pos.show', $invoice);
+        return redirect()->route('backend.payment.show', $invoice);
     }
 
     public function show(Request $request, Invoice $resource) {
         // check if invoice is already paid
         if ($resource->is_paid)
             // reject with error
-            return redirect()->route('backend.pos.create')
-                ->withErrors(__('pos::pos.invoice.already-paid'));
+            return redirect()->route('backend.payment.create')
+                ->withErrors(__('pos::payment.invoice.already-paid'));
 
         // eager load resource data
         $resource->load([
@@ -162,7 +145,7 @@ class POSController extends Controller {
         ]);
 dump(array_group(old('payments') ?? []));
         // show invoice and payment methods
-        return view('pos::pos.show', compact('resource'));
+        return view('pos::payment.show', compact('resource'));
     }
 
     public function pay(Request $request, Invoice $resource) {
@@ -204,13 +187,13 @@ dump(array_group(old('payments') ?? []));
                     if (($cash = pos_settings()->cashBook()->cashes()->open()->first()) === null)
                         // return with error
                         return back()->withInput()
-                            ->withErrors(__('pos::pos.payment.no-open-cash', [
+                            ->withErrors(__('pos::payment.payment.no-open-cash', [
                                 'cashBook'  => pos_settings()->cashBook()->name,
                             ]));
 
                     $paymentResource = $cash->lines()->make([
                         'cash_type'         => CashLine::CASH_TYPE_Invoice,
-                        'description'       => __('pos::pos.payment.cash-line.description', [
+                        'description'       => __('pos::payment.payment.cash-line.description', [
                             'invoice'       => $resource->document_number,
                         ]),
                         'amount'            => $payment['payment_amount'],
@@ -261,7 +244,7 @@ dump(array_group(old('payments') ?? []));
 
                 // return with error
                 default: return back()->withInput()
-                    ->withErrors(__('pos::pos.payment.unknown-payment-type', [
+                    ->withErrors(__('pos::payment.payment.unknown-payment-type', [
                         'type'  => $payment['payment_type'],
                     ]));
             }
@@ -299,7 +282,7 @@ dump(array_group(old('payments') ?? []));
         DB::commit();
 
         // redirect to POS home
-        return redirect()->route('backend.pos.create');
+        return redirect()->route('backend.payment.create');
     }
 
     private function syncLines(Order $order, array $lines) {

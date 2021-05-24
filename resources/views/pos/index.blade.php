@@ -9,18 +9,18 @@
             <div class="row">
                 <div class="col-6">
                     <i class="fas fa-company-plus"></i>
-                    @lang('pos::pos.create') <span class="font-weight-normal">[ {{ pos_settings()->currency()->name }} | {{ pos_settings()->branch()->name }} | {{ pos_settings()->warehouse()->name }} ]</span>
+                    @lang('pos::pos.index')
                 </div>
                 <div class="col-6 d-flex justify-content-end">
-                    {{-- <a href="{{ route('backend.inventories.create') }}"
+                    {{-- <a href="{{ route('backend.pos.create') }}"
                         class="btn btn-sm btn-primary">@lang('inventory::companieies.add')</a> --}}
                 </div>
             </div>
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ route('backend.pos.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('backend.pos.session') }}" enctype="multipart/form-data">
                 @csrf
-                @include('pos::pos.create.form')
+                @include('pos::pos.index.form')
             </form>
         </div>
     </div>
