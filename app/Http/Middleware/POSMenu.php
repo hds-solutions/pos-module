@@ -5,15 +5,8 @@ namespace HDSSolutions\Finpar\Http\Middleware;
 use Closure;
 use Illuminate\Support\Facades\Route;
 
-class POSMenu {
+class POSMenu extends Base\Menu {
 
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle($request, Closure $next) {
         // // create a submenu
         $sub = backend()->menu()
@@ -36,7 +29,7 @@ class POSMenu {
     }
 
     private function pos(&$menu) {
-        if (Route::has('backend.pos'))
+        if (Route::has('backend.pos') && $this->can('pos'))
             $menu->add(__('pos::pos.nav'), [
                 'route'     => 'backend.pos',
                 'icon'      => 'pos'
@@ -46,7 +39,7 @@ class POSMenu {
     }
 
     private function payment(&$menu) {
-        if (Route::has('backend.payment'))
+        if (Route::has('backend.payment') && $this->can('payment'))
             $menu->add(__('pos::payment.nav'), [
                 'route'     => 'backend.payment',
                 'icon'      => 'payment'
