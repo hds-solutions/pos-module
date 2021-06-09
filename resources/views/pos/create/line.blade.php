@@ -5,7 +5,6 @@
         </div>
     </div>
     <div class="col-9 col-xl-10 d-flex align-items-center">
-
         <div class="w-100">
             <div class="form-row">
 
@@ -37,14 +36,13 @@
                         data-preview="#line_preview" data-preview-init="false"
                         data-preview-url-prepend="{{ asset('') }}"
 
-                        {{-- foreign="products" --}}
-                        {{-- foreign-add-label="products-catalog::currencies.add" --}}
+                        {{-- foreign="products" foreign-add-label="products-catalog::products.add" --}}
 
                         {{-- label="sales::order.lines.product_id.0" --}}
                         placeholder="sales::order.lines.product_id._"
                         {{-- helper="sales::order.lines.product_id.?" --}} />
-
                 </div>
+
                 <div class="col-4">
 {{--
                     <select name="lines[variant_id][]"
@@ -75,8 +73,7 @@
                         {{-- data-preview="#line_preview" data-preview-init="false" --}}
                         {{-- data-preview-url-prepend="{{ asset('') }}" --}}
 
-                        {{-- foreign="" --}}
-                        {{-- foreign-add-label="products-catalog::currencies.add" --}}
+                        {{-- foreign="variants" foreign-add-label="products-catalog::variants.add" --}}
 
                         {{-- label="sales::order.lines.variant_id.0" --}}
                         placeholder="sales::order.lines.variant_id._"
@@ -93,7 +90,8 @@
                         <x-form-amount name="lines[price][]" min="1"
                             :required="$selected !== null"
                             data-decimals="{{ pos_settings()->currency()->decimals }}"
-                            value="{{ $old['price'] ?? ($selected !== null ? number($selected->pivot->cost, $selected->pivot->currency->decimals) : null) }}"
+                            data-currency-by="[name='currency_id']" data-keep-id="true"
+                            value="{{ $old['price'] ?? null }}"
                             class="text-right"
                             placeholder="sales::order.lines.price._" />
 {{--
@@ -115,7 +113,7 @@
  --}}
                         <x-form-amount name="lines[total][]" min="1" readonly tabindex="-1"
                             data-decimals="{{ pos_settings()->currency()->decimals }}"
-                            value="{{ $old['total'] ?? ($selected !== null ? number($selected->pivot->cost, $selected->pivot->currency->decimals) : null) }}"
+                            value="{{ $old['total'] ?? null }}"
                             class="text-right font-weight-bold"
                             placeholder="sales::order.lines.total._" />
                     </div>
@@ -124,6 +122,7 @@
             </div>
         </div>
     </div>
+
     <div class="col-2 col-xl-1 d-flex justify-content-end align-items-center">
         <button type="button" class="btn btn-danger" tabindex="-1"
             data-action="delete"
