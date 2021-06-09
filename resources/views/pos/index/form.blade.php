@@ -8,8 +8,7 @@
 
     label="{{ __('pos::pos.currency_id.0') }}"
     placeholder="{{ __('pos::pos.currency_id._') }}"
-    helper="{{ __('pos::pos.currency_id.?') }}"
-    class="mb-2" />
+    {{-- helper="{{ __('pos::pos.currency_id.?') }}" --}} />
 
 <x-backend-form-foreign :resource="$resource ?? null" name="branch_id" required
     foreign="branches" :values="$branches"
@@ -18,8 +17,7 @@
 
     label="{{ __('pos::pos.branch_id.0') }}"
     placeholder="{{ __('pos::pos.branch_id._') }}"
-    {{-- helper="{{ __('pos::pos.branch_id.?') }}" --}}
-    class="mb-2" />
+    {{-- helper="{{ __('pos::pos.branch_id.?') }}" --}} />
 
 <x-backend-form-foreign :resource="$resource ?? null" name="warehouse_id" required
     foreign="warehouses" :values="$branches->pluck('warehouses')->flatten()"
@@ -29,8 +27,7 @@
 
     label="{{ __('pos::pos.warehouse_id.0') }}"
     placeholder="{{ __('pos::pos.warehouse_id._') }}"
-    {{-- helper="{{ __('pos::pos.warehouse_id.?') }}" --}}
-    class="mb-2" />
+    {{-- helper="{{ __('pos::pos.warehouse_id.?') }}" --}} />
 
 <x-backend-form-foreign :resource="$resource ?? null" name="cash_book_id" required
     foreign="cash_books" :values="$cashBooks" foreign-add-label="{{ __('cash::cash_books.add') }}"
