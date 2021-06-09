@@ -323,7 +323,7 @@ dump(array_group(old('payments') ?? []));
                 // TODO: get logged Employee
                 'employee_id'       => $order->employee_id,
                 'currency_id'       => $order->currency->id,
-                'price_reference'   => $variant->price($order->currency)->pivot->price ?? $product->price($order->currency)->pivot->price,
+                'price_reference'   => $variant?->price($order->currency)->pivot->price ?? $product->price($order->currency)->pivot->price,
             ]);
 
             // update line values
