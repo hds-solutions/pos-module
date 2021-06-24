@@ -79,8 +79,13 @@ class POSController extends Controller {
             'variants.prices',
         ])->get();
 
+        $highs = [
+            'stamping'          => $stamping = Invoice::currentStamping(),
+            'document_number'   => Invoice::nextDocumentNumber( $stamping ),
+        ];
+
         // show main form
-        return view('pos::pos.create', compact('customers', 'products'));
+        return view('pos::pos.create', compact('customers', 'products', 'highs'));
     }
 
     public function store(Request $request) {
@@ -91,7 +96,8 @@ class POSController extends Controller {
         $request->merge([ 'is_purchase' => false ]);
         // create resource
         $order = Order::make( $request->input() );
-        $order->transaction_date = now();
+        $order->transacted_at = now();
+        $order->document_number = str_increment(Order::max('document_number'));
         $order->partnerable()->associate( Customer::find($request->get('customer_id')) );
         $order->branch()->associate( pos_settings()->branch() );
         $order->warehouse()->associate( pos_settings()->warehouse() );
@@ -118,9 +124,22 @@ class POSController extends Controller {
 
         // create inovice from order
         $invoice = Invoice::createFromOrder($order, [
+            'stamping'          => $request->input('stamping'),
             'document_number'   => $request->input('document_number'),
             'is_credit'         => $request->input('payment_rule') == Invoice::PAYMENT_RULE_Credit,
         ]);
+        // check if invoice was created
+        if (!$invoice->exists)
+            // return invoice errors
+            return back()->withInput()
+                ->withErrors( $invoice->errors() );
+        // check if lines were created
+        foreach ($invoice->lines as $line)
+            // check if line is created
+            if (!$line->exists)
+                // return invoiceLine errors
+                return back()->withInput()
+                    ->withErrors( $line->errors() );
 
         // complete invoice
         if (!$invoice->processIt( Document::ACTION_Complete ))
@@ -160,7 +179,7 @@ class POSController extends Controller {
                 ]),
             ]),
         ]);
-dump(array_group(old('payments') ?? []));
+
         // show invoice and payment methods
         return view('pos::pos.show', compact('resource'));
     }
@@ -195,7 +214,7 @@ dump(array_group(old('payments') ?? []));
         // create payments
         foreach (array_group($request->input('payments')) as $payment) {
             // ignore empty payments
-            if ($payment['payment_type'] === null) continue;
+            if ($payment['payment_type'] === null || $payment['payment_amount'] === null) continue;
 
             // check payment type
             switch ($payment['payment_type']) {

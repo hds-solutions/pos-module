@@ -29,33 +29,38 @@
                 <div class="col-4">
 
                     <div class="row">
-                        <div class="col-6">@lang('sales::invoice.transacted_at.0'):</div>
-                        <div class="col-6 h4">{{ pretty_date($resource->transacted_at, true) }}</div>
+                        <div class="col-5">@lang('sales::invoice.transacted_at.0'):</div>
+                        <div class="col-7 h4">{{ pretty_date($resource->transacted_at, true) }}</div>
                     </div>
 
                     <div class="row">
-                        <div class="col-6">@lang('sales::invoice.partnerable_id.0'):</div>
-                        <div class="col-6 h4">{{ $resource->partnerable->fullname }}</div>
+                        <div class="col-5">@lang('sales::invoice.partnerable_id.0'):</div>
+                        <div class="col-7 h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                     </div>
 
                     <div class="row">
-                        <div class="col-6">@lang('sales::invoice.address_id.0'):</div>
-                        {{-- <div class="col-6 h4">{{ $resource->address->name }}</div> --}}
-                        <div class="col-6 h4">TODO: address</div>
+                        <div class="col-5">@lang('sales::invoice.address_id.0'):</div>
+                        {{-- <div class="col-7 h4">{{ $resource->address->name }}</div> --}}
+                        <div class="col-7 h4">TODO: address</div>
                     </div>
 
                 </div>
 
-                <div class="col-4 offset-2">
+                <div class="col-4 offset-1">
 
                     <div class="row">
-                        <div class="col-6">@lang('sales::invoice.document_number.0'):</div>
-                        <div class="col-6 h4">{{ $resource->document_number }}</div>
+                        <div class="col-5">@lang('sales::invoice.stamping.0'):</div>
+                        <div class="col-7 h4">{{ $resource->stamping }}</div>
                     </div>
 
                     <div class="row">
-                        <div class="col-6">@lang('sales::invoice.payment_rule.0'):</div>
-                        <div class="col-6 h4">{{ __('sales::invoice.payment_rule.'.($resource->is_credit
+                        <div class="col-5">@lang('sales::invoice.document_number.0'):</div>
+                        <div class="col-7 h4 font-weight-bold">{{ $resource->document_number }}</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-5">@lang('sales::invoice.payment_rule.0'):</div>
+                        <div class="col-7 h4">{{ __('sales::invoice.payment_rule.'.($resource->is_credit
                             ? Invoice::PAYMENT_RULE_Credit
                             : Invoice::PAYMENT_RULE_Cash)) }}</div>
                     </div>
@@ -77,10 +82,10 @@
                             <thead>
                                 <tr>
                                     <th class="w-150px">@lang('sales::invoice.lines.image.0')</th>
-                                    <th class="w-150px text-center">@lang('sales::invoice.lines.quantity_invoiced.0')</th>
                                     <th>@lang('sales::invoice.lines.product_id.0')</th>
                                     <th>@lang('sales::invoice.lines.variant_id.0')</th>
                                     <th class="w-150px text-center">@lang('sales::invoice.lines.price_invoiced.0')</th>
+                                    <th class="w-150px text-center">@lang('sales::invoice.lines.quantity_invoiced.0')</th>
                                     <th class="w-150px text-center">@lang('sales::invoice.lines.total.0')</th>
                                 </tr>
                             </thead>
@@ -100,7 +105,6 @@
                                                 ) }}" class="img-fluid mh-50px">
                                             </div>
                                         </td>
-                                        <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_invoiced ?? 0 }}</td>
                                         <td class="align-middle pl-3">{{ $line->product->name }}</td>
                                         <td class="align-middle pl-3">
                                             <div>{{ $line->variant->sku ?? '--' }}</div>
@@ -113,8 +117,9 @@
                                             </div>
                                             @endif
                                         </td>
-                                        <td class="align-middle text-right">{{ amount($line->price_invoiced, $line->currency) }}</td>
-                                        <td class="align-middle text-right h5 font-weight-bold">{{ amount($line->total, $line->currency) }}</td>
+                                        <td class="align-middle text-right">{{ currency($line->currency_id)->code }} <b>{{ number($line->price_invoiced, currency($line->currency_id)->decimals) }}</b></td>
+                                        <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_invoiced ?? 0 }}</td>
+                                        <td class="align-middle text-right h5 w-100px">{{ currency($line->currency_id)->code }} <b>{{ number($line->total, currency($line->currency_id)->decimals) }}</b></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -125,13 +130,9 @@
             </div>
 
             <div class="row">
-                <div class="col-3 offset-9">
-
-                    <div class="row">
-                        {{-- <div class="col-6">@lang('pos::pos.total.0'):</div> --}}
-                        <div class="col-12 h3 font-weight-bold text-right">{{ amount($resource->total, $resource->currency) }}</div>
-                    </div>
-
+                <div class="col-2 offset-8 font-weight-bold d-flex align-items-center justify-content-end">Total</div>
+                <div class="col-2 text-right">
+                    <h3 class="pr-1 m-0">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->total, currency($resource->currency_id)->decimals) }}</b></h3>
                 </div>
             </div>
 
