@@ -54,131 +54,90 @@ return redirect()->route('backend.payment.create');
     }
 
     public function create(Request $request) {
-        // load customers with pending invoices
-        $customers = Customer::whereHas('invoices',
-            // 'addresses',
-            fn($invoice) => $invoice->completed()->paid(false)->with([
-                'currency',
-            ]),
-        )->get();
+        // load employees
+        $employees = Employee::all();
+        // load customers
+        $customers = Customer::with([
+            // 'addresses', // TODO: Customer.addresses
+            // load available CreditNotes of Customer
+            'creditNotes'   => fn($creditNote) => $creditNote->available()->with([ 'identity' ]),
+            // load pending invoices of customer
+            'invoices'      => fn($invoice) => $invoice->completed()->paid(false),
+        ])->get();
+
+        $highs = [
+            'document_number'   => Receipment::nextDocumentNumber(),
+        ];
 
         // show main form
-        return view('pos::payment.create', compact('customers'));
+        return view('pos::payment.create', compact('employees', 'customers', 'highs'));
     }
 
     public function store(Request $request) {
         // start a transaction
         DB::beginTransaction();
-
-        // POS always creates a Sales document
-        $request->merge([ 'is_purchase' => false ]);
         // create resource
-        $order = Order::make( $request->input() );
-        $order->transaction_date = now();
-        $order->partnerable()->associate( Customer::find($request->get('customer_id')) );
-        $order->branch()->associate( pos_settings()->branch() );
-        $order->warehouse()->associate( pos_settings()->warehouse() );
-        $order->currency()->associate( pos_settings()->currency() );
-        // TODO: get logged Employee
-        $order->employee()->associate( Employee::inRandomOrder()->first() );
+        $resource = new Receipment( $request->input() );
+        $resource->partnerable()->associate( Customer::findOrFail($request->partnerable_id) );
 
         // save resource
-        if (!$order->save())
+        if (!$resource->save())
             // redirect with errors
-            return back()->withInput()
-                ->withErrors( $order->errors() );
+            return back()
+                ->withErrors( $resource->errors() )
+                ->withInput();
 
-        // sync order lines
-        if (($redirect = $this->syncLines($order, $request->get('lines'))) !== true)
+        // sync receipment invoices
+        if (($redirect = $this->saveInvoices($resource, $request->get('invoices'))) !== true)
             // return redirection
             return $redirect;
 
-        // complete order
-        if (!$order->processIt( Document::ACTION_Complete ))
-            // return document error
-            return back()->withInput()
-                ->withErrors( $order->getDocumentError() );
+        // sync receipment payments
+        if (($redirect = $this->savePayments($resource, $request->get('payments'))) !== true)
+            // return redirection
+            return $redirect;
 
-        // create inovice from order
-        $invoice = Invoice::createFromOrder($order, [
-            'document_number'   => $request->input('document_number'),
-            'is_credit'         => $request->input('payment_rule') == Invoice::PAYMENT_RULE_Credit,
-        ]);
-
-        // complete invoice
-        if (!$invoice->processIt( Document::ACTION_Complete ))
-            // return document error
+        // complete receipment
+        if (!$resource->processIt( Document::ACTION_Complete ))
+            // return with error
             return back()->withInput()
-                ->withErrors( $invoice->getDocumentError() );
+                ->withErrors( $resource->getDocumentError() );
 
         // commit changes to database
         DB::commit();
 
-        // go to payment window
-        return redirect()->route('backend.payment.show', $invoice);
+        // go to receipment details
+        return redirect()->route('backend.receipments.show', $resource);
     }
 
-    public function show(Request $request, Invoice $resource) {
-        // check if invoice is already paid
-        if ($resource->is_paid)
-            // reject with error
-            return redirect()->route('backend.payment.create')
-                ->withErrors(__('pos::payment.invoice.already-paid'));
+    private function saveInvoices(Receipment $resource, array $invoices) {
+        // foreach new/updated invoices
+        foreach (($invoices = array_group( $invoices )) as $invoice) {
+            // ignore line if invoice wasn't specified
+            if (!isset($invoice['invoice_id']) || is_null($invoice['imputed_amount'])) continue;
 
-        // eager load resource data
-        $resource->load([
-            'currency',
-            'partnerable' => fn($customer) => $customer->with([
-                // load available CreditNotes of Customer
-                'creditNotes' => fn($creditNote) => $creditNote->available()->with([ 'identity' ]),
-            ]),
-            'lines' => fn($line) => $line->with([
-                'currency',
-                'product.images',
-                'variant' => fn($variant) => $variant->with([
-                    'images',
-                    'values' => fn($value) => $value->with([
-                        'option_value',
-                    ]),
-                ]),
-            ]),
-        ]);
-dump(array_group(old('payments') ?? []));
-        // show invoice and payment methods
-        return view('pos::payment.show', compact('resource'));
+            // create ReceipmentInvoice for current Invoice
+            $receipmentInvoice = ReceipmentInvoice::make([
+                'receipment_id'     => $resource->id,
+                'invoice_id'        => $invoice['invoice_id'],
+                'imputed_amount'    => $invoice['imputed_amount'],
+            ]);
+
+            // save receipment line
+            if (!$receipmentInvoice->save())
+                return back()->withInput()
+                    ->withErrors( $receipmentInvoice->errors() );
+        }
+
+        // return success
+        return true;
     }
 
-    public function pay(Request $request, Invoice $resource) {
-        // start a transaction
-        DB::beginTransaction();
-
-        // create receipment
-        $receipment = new Receipment([
-            'document_number'   => 123, // TODO: Get next receipment No.
-        ]);
-        $receipment->employee()->associate( $resource->employee );   // TODO: get employee from session
-        $receipment->partnerable()->associate( $resource->partnerable );
-        $receipment->currency()->associate( $resource->currency );
-        if (!$receipment->save())
-            // return with errors
-            return back()->withInput()
-                ->withErrors( $receipment->errors() );
-
-        // assign Invoice to Receipment
-        $receipmentInvoice = new ReceipmentInvoice([
-            'receipment_id'     => $receipment->id,
-            'imputed_amount'    => $resource->total,
-        ]);
-        $receipmentInvoice->invoice()->associate( $resource );
-        if (!$receipmentInvoice->save())
-            // return with errors
-            return back()->withInput()
-                ->withErrors( $receipmentInvoice->errors() );
-
-        // create payments
-        foreach (array_group($request->input('payments')) as $payment) {
-            // ignore empty payments
-            if ($payment['payment_type'] === null) continue;
+    private function savePayments(Receipment $resource, array $payments) {
+        // foreach new/updated payments
+        foreach (($payments = array_group( $payments )) as $payment) {
+            // ignore line if invoice wasn't specified
+            if (!isset($payment['payment_type']) || is_null($payment['payment_amount'])) continue;
 
             // check payment type
             switch ($payment['payment_type']) {
@@ -192,9 +151,9 @@ dump(array_group(old('payments') ?? []));
                             ]));
 
                     $paymentResource = $cash->lines()->make([
-                        'cash_type'         => CashLine::CASH_TYPE_Invoice,
+                        'cash_type'         => CashLine::CASH_TYPE_Receipment,
                         'description'       => __('pos::payment.payment.cash-line.description', [
-                            'invoice'       => $resource->document_number,
+                            'receipment'    => $resource->document_number,
                         ]),
                         'amount'            => $payment['payment_amount'],
                     ]);
@@ -244,7 +203,7 @@ dump(array_group(old('payments') ?? []));
 
                 // return with error
                 default: return back()->withInput()
-                    ->withErrors(__('pos::payment.payment.unknown-payment-type', [
+                    ->withErrors(__('pos::pos.payment.unknown-payment-type', [
                         'type'  => $payment['payment_type'],
                     ]));
             }
@@ -260,9 +219,9 @@ dump(array_group(old('payments') ?? []));
 
             // create ReceipmentPayment
             $receipmentPayment = new ReceipmentPayment([
-                'receipment_id'     => $receipment->id,
-                'payment_amount'    => $paymentResource->payment_amount ?? $paymentResource->amount,
-                // 'used_amount'       => $paymentResource->payment_amount ?? $paymentResource->amount,
+                'receipment_id'     => $resource->id,
+                'payment_type'      => $payment['payment_type'],
+                'payment_amount'    => $payment['payment_amount'],
             ]);
             $receipmentPayment->currency()->associate( $paymentResource->currency );
             $receipmentPayment->paymentable()->associate( $paymentResource );
@@ -270,72 +229,6 @@ dump(array_group(old('payments') ?? []));
                 // return with errors
                 return back()->withInput()
                     ->withErrors( $receipmentPayment->errors() );
-        }
-
-        // complete receipment
-        if (!$receipment->processIt( Document::ACTION_Complete ))
-            // return with error
-            return back()->withInput()
-                ->withErrors( $receipment->getDocumentError() );
-
-        // commit transaction
-        DB::commit();
-
-        // redirect to POS home
-        return redirect()->route('backend.payment.create');
-    }
-
-    private function syncLines(Order $order, array $lines) {
-        // load order lines
-        $order->load(['lines']);
-
-        // foreach new/updated lines
-        foreach (($lines = array_group($lines)) as $line) {
-            // ignore line if product wasn't specified
-            if (!isset($line['product_id']) || is_null($line['quantity'])) continue;
-            // load product
-            $product = Product::find($line['product_id']);
-            // load variant, if was specified
-            $variant = isset($line['variant_id']) ? $product->variants->firstWhere('id', $line['variant_id']) : null;
-
-            // find existing line or create a new one
-            $orderLine = $order->lines()->firstOrNew([
-                'product_id'        => $product->id,
-                'variant_id'        => $variant->id ?? null,
-            ], [
-                // TODO: get logged Employee
-                'employee_id'       => $order->employee_id,
-                'currency_id'       => $order->currency->id,
-                'price_reference'   => $variant->price($order->currency)->pivot->price ?? $product->price($order->currency)->pivot->price,
-            ]);
-
-            // update line values
-            $orderLine->fill([
-                'price_ordered'     => $line['price'] ?? 0,
-                'quantity_ordered'  => $line['quantity'] ?? null,
-            ]);
-            // save order line
-            if (!$orderLine->save())
-                return back()->withInput()
-                    ->withErrors( $orderLine->errors() );
-        }
-
-        // find removed order lines
-        foreach ($order->lines as $line) {
-            // deleted flag
-            $deleted = true;
-            // check against $request->lines
-            foreach ($lines as $rLine) {
-                // ignore empty lines
-                if (!isset($rLine['product_id'])) continue;
-                // check if line exists
-                if ($line->product_id == $rLine['product_id'] &&
-                    $line->variant_id == ($rLine['variant_id'] ?? null))
-                    // change flag to keep line
-                    $deleted = false;
-            }
-            // remove line if was deleted
-            if ($deleted) $line->delete();
         }
 
         // return success

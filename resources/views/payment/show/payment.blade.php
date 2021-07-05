@@ -2,8 +2,8 @@
 
     <div class="col-10 col-lg-11">
         <x-backend-form-select :resource="$resource ?? null" name="payments[payment_type][]"
-            :values="\HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPES"
-            default="{{ $old['payment_type'] ?? \HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPE_Cash }}"
+            :Payment::PAYMENT_TYPES"
+            default="{{ $old['payment_type'] ?? Payment::PAYMENT_TYPE_Cash }}"
 
             label="{{ __('payments::payment.payment_type.0') }}"
             placeholder="{{ __('payments::payment.payment_type._') }}"
@@ -21,13 +21,13 @@
 
         </x-backend-form-select>
 
-        <div class="form-row" data-only="payments[payment_type][]={{ \HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPE_Cash }}">
+        <div class="form-row" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Cash }}">
             <div class="col">
                 {{-- Cash --}}
             </div>
         </div>
 
-        <div class="form-row" data-only="payments[payment_type][]={{ \HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPE_Credit }}">
+        <div class="form-row" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Credit }}">
             <div class="col">
                 {{-- Credit --}}
                 <x-backend-form-number :resource="null" name="payments[interest][]"
@@ -43,7 +43,7 @@
             </div>
         </div>
 
-        <div class="form-row" data-only="payments[payment_type][]={{ \HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPE_Check }}">
+        <div class="form-row" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Check }}">
             <div class="col">
                 {{-- Check --}}
                 <x-backend-form-text :resource="null" name="payments[bank_name][]"
@@ -74,7 +74,7 @@
             </div>
         </div>
 
-        <div class="form-row" data-only="payments[payment_type][]={{ \HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPE_CreditNote }}">
+        <div class="form-row" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_CreditNote }}">
             <div class="col">
                 {{-- CreditNote --}}
                 <x-backend-form-foreign :resource="null" name="payments[credit_note_id][]"
@@ -91,12 +91,12 @@
                     class="mt-1 mb-0" />
             </div>
         </div>
-        <div class="form-row" data-only="payments[payment_type][]={{ \HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPE_Promissory }}">
+        <div class="form-row" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Promissory }}">
             <div class="col">
                 TODO: Promissory
             </div>
         </div>
-        <div class="form-row" data-only="payments[payment_type][]={{ \HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPE_Card }}">
+        <div class="form-row" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Card }}">
             <div class="col">
                 <x-backend-form-text :resource="null" name="payments[card_holder][]"
                     default="{{ $old['card_holder'] ?? null }}"

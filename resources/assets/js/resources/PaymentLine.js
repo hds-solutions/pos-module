@@ -77,6 +77,9 @@ export default class PaymentLine extends DocumentLine {
         let total = 0;
         // foreach lines
         this.document.lines.forEach(line => {
+            // ignore if not invoice line
+            if (!(line instanceof PaymentLine)) return;
+
             // parse total
             let lineTotal = line.container.querySelector('[name="payments[payment_amount][]"]').value.replace(/\,*/g, '') * 1;
             // ignore if is empty
@@ -84,10 +87,11 @@ export default class PaymentLine extends DocumentLine {
             // add to acumulator
             total += lineTotal;
         });
-        // set total
-        this.document.total.value = total > 0 ? total : '';
+
+        // set totals
+        this.document.paymentsAmount.value = total > 0 ? total : '';
         // fire format
-        if (total > 0) this.fire('blur', this.document.total);
+        if (total > 0) this.fire('blur', this.document.paymentsAmount);
     }
 
 }

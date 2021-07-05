@@ -97,7 +97,7 @@ class POSController extends Controller {
         // create resource
         $order = Order::make( $request->input() );
         $order->transacted_at = now();
-        $order->document_number = str_increment(Order::max('document_number'));
+        $order->document_number = Order::nextDocumentNumber();
         $order->partnerable()->associate( Customer::find($request->get('customer_id')) );
         $order->branch()->associate( pos_settings()->branch() );
         $order->warehouse()->associate( pos_settings()->warehouse() );
@@ -190,7 +190,7 @@ class POSController extends Controller {
 
         // create receipment
         $receipment = new Receipment([
-            'document_number'   => 123, // TODO: Get next receipment No.
+            'document_number'   => Receipment::nextDocumentNumber(),
         ]);
         $receipment->employee()->associate( $resource->employee );   // TODO: get employee from session
         $receipment->partnerable()->associate( $resource->partnerable );
@@ -297,6 +297,7 @@ class POSController extends Controller {
             // create ReceipmentPayment
             $receipmentPayment = new ReceipmentPayment([
                 'receipment_id'     => $receipment->id,
+                'payment_type'      => $payment['payment_type'],
                 'payment_amount'    => $paymentResource->payment_amount ?? $paymentResource->amount,
                 // 'used_amount'       => $paymentResource->payment_amount ?? $paymentResource->amount,
             ]);

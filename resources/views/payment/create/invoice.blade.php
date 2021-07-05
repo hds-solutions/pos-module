@@ -1,45 +1,45 @@
-<div class="form-row my-2 receipment-invoice-container" @if ($selected === null && $old === null) id="new" @else data-used="true" @endif>
-    <div class="col-1 d-flex justify-content-center">
-        <div class="position-relative d-flex align-items-center">
-            <img src="" class="img-fluid mh-50px" id="line_preview">
-        </div>
-    </div>
-    <div class="col-9 col-xl-10 d-flex align-items-center">
+<div class="col-10 col-xl-11 d-flex align-items-center">
+    <div class="w-100">
+        <div class="form-row">
 
-        <div class="w-100">
-            <div class="form-row">
+            <div class="col-7">
+                <x-form-foreign name="invoices[invoice_id][]" :required="$selected !== null"
+                    :values="$invoices" data-live-search="true"
+                    default="{{ $old['invoice_id'] ?? $selected?->id }}"
 
-                <div class="col-4">
-                    <select name="invoices[invoice_id][]" data-live-search="true"
-                        @if ($selected !== null) required @endif
-                        data-filtered-by='[name="customer_id"]' data-filtered-using="customer"
-                        data-preview="#line_preview" data-preview-init="false" data-filtered-keep-id="true"
-                        value="{{ $old['invoice_id'] ?? $selected?->invoice_id ?? null }}"
-                        class="form-control selectpicker"
-                        placeholder="@lang('sales::order.lines.invoice_id._')">
+                    filtered-by='[name="partnerable_id"]' filtered-using="partnerable"
+                    data-filtered-keep-id="true"
 
-                        <option value="" selected disabled hidden>@lang('sales::order.lines.invoice_id.0')</option>
+                    show="document_number - transacted_at_pretty - total_pretty" {{-- title="code" --}}
+                    append="partnerable:partnerable_id,total,pending-amount:pending_amount"
 
-                        @foreach($invoices as $invoice)
-                            <option value="{{ $invoice->id }}" data-customer="{{ $invoice->partnerable_id }}"
-                                @if ($invoice->id == ($old['invoice_id'] ?? $selected?->invoice_id ?? null)) selected @endif>
-                                [{{ $invoice->document_number }}] {{ amount($invoice->total, $invoice->currency) }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
+                    label="sales::receipment.invoices.invoice_id.0"
+                    placeholder="sales::receipment.invoices.invoice_id._"
+                    {{-- helper="sales::receipment.invoices.invoice_id.?" --}} />
             </div>
+
+            <div class="col-5">
+                <div class="input-group">
+                    <x-form-amount name="invoices[pending_amount][]" readonly tabindex="-1"
+                        data-currency-by="[name=currency_id]" data-keep-id="true"
+                        value="{{ $old['pending_amount'] ?? ($selected !== null ? number($selected->pending_amount, currency($selected->currency_id)->decimals) : null) }}"
+                        class="text-right"
+                        placeholder="sales::receipment.invoices.pending_amount._" />
+
+                    <x-form-amount name="invoices[imputed_amount][]" min="1"
+                        :required="$selected !== null"
+                        data-currency-by="[name=currency_id]" data-keep-id="true"
+                        value="{{ $old['imputed_amount'] ?? ($selected !== null ? number($selected->pivot->imputed_amount, currency($selected->currency_id)->decimals) : null) }}"
+                        class="text-right font-weight-bold"
+                        placeholder="sales::receipment.invoices.imputed_amount._" />
+                </div>
+            </div>
+
         </div>
     </div>
-    <div class="col-2 col-xl-1 d-flex justify-content-end align-items-center">
-        <button type="button" class="btn btn-danger"
-            data-action="delete"
-            @if ($selected !== null)
-            data-confirm="Eliminar Linea?"
-            data-text="Esta seguro de eliminar la linea con el producto {{ $selected->product->name }}?"
-            data-accept="Si, eliminar"
-            @endif>X
-        </button>
-    </div>
+</div>
+
+<div class="col-2 col-xl-1 d-flex justify-content-end align-items-center">
+    <button type="button" class="btn btn-danger"
+        data-action="delete" tabindex="-1">X</button>
 </div>
