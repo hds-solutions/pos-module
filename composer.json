@@ -16,7 +16,8 @@
     "minimum-stability": "dev",
     "require": {
         "php": "^8.0",
-        "finpar/backend-module": "dev-develop"
+        "finpar/backend-module": "dev-develop",
+        "finpar/payments-module": "dev-develop"
     },
     "autoload": {
         "psr-4": {
