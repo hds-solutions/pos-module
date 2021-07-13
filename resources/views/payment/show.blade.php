@@ -12,8 +12,8 @@
                     @lang('pos::pos.show') <span class="font-weight-normal">[ {{ pos_settings()->currency()->name }} | {{ pos_settings()->branch()->name }} | {{ pos_settings()->warehouse()->name }} ]</span>
                 </div>
                 <div class="col-6 d-flex justify-content-end">
-                    {{-- <a href="{{ route('backend.inventories.create') }}"
-                        class="btn btn-sm btn-primary">@lang('pos::companieies.add')</a> --}}
+                    {{-- <a href="{{ route('backend.payment.create') }}"
+                        class="btn btn-sm btn-primary">@lang('pos::payment.add')</a> --}}
                 </div>
             </div>
         </div>
