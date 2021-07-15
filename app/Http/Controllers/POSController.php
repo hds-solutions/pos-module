@@ -239,7 +239,6 @@ class POSController extends Controller {
 
                 case Payment::PAYMENT_TYPE_Card:
                     $paymentResource = new Card([
-                        'document_number'   => 1234, // TODO: Generate Card.document_number
                         'card_holder'       => $payment['card_holder'],
                         'card_number'       => $payment['card_number'],
                         'is_credit'         => filter_var($payment['is_credit'], FILTER_VALIDATE_BOOLEAN),
@@ -249,7 +248,7 @@ class POSController extends Controller {
 
                 case Payment::PAYMENT_TYPE_Credit:
                     $paymentResource = new Credit([
-                        'document_number'   => 1234, // TODO: Generate Credit.document_number
+                        'document_number'   => Credit::nextDocumentNumber()
                         'interest'          => $payment['interest'],
                         'dues'              => $payment['dues'],
                         'payment_amount'    => $payment['payment_amount'],
