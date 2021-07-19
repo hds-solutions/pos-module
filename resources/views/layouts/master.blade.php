@@ -30,8 +30,8 @@
     <!-- End of Page Wrapper -->
     </div>
 
-    {{-- confirm modal --}}
-    @include('backend::layouts.modal-confirmation')
+    {{-- modals --}}
+    @include('backend::layouts.modals')
 @endsection
 
 @push('styles')

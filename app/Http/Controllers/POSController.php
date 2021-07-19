@@ -248,7 +248,7 @@ class POSController extends Controller {
 
                 case Payment::PAYMENT_TYPE_Credit:
                     $paymentResource = new Credit([
-                        'document_number'   => Credit::nextDocumentNumber()
+                        'document_number'   => Credit::nextDocumentNumber(),
                         'interest'          => $payment['interest'],
                         'dues'              => $payment['dues'],
                         'payment_amount'    => $payment['payment_amount'],
