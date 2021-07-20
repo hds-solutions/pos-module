@@ -1,8 +1,8 @@
 <?php
 
-namespace HDSSolutions\Finpar\DataTables;
+namespace HDSSolutions\Laravel\DataTables;
 
-use HDSSolutions\Finpar\Models\Empty as Resource;
+use HDSSolutions\Laravel\Models\Empty as Resource;
 use Yajra\DataTables\Html\Column;
 
 class POSDataTable extends Base\DataTable {

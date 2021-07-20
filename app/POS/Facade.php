@@ -1,6 +1,6 @@
 <?php
 
-namespace HDSSolutions\Finpar\POS;
+namespace HDSSolutions\Laravel\POS;
 
 class Facade extends \Illuminate\Support\Facades\Facade {
     /**

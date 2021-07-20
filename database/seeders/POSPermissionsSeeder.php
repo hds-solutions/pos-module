@@ -1,6 +1,6 @@
 <?php
 
-namespace HDSSolutions\Finpar\Seeders;
+namespace HDSSolutions\Laravel\Seeders;
 
 class POSPermissionsSeeder extends Base\PermissionsSeeder {
 

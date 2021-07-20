@@ -1,11 +1,11 @@
 <?php
 
-namespace HDSSolutions\Finpar;
+namespace HDSSolutions\Laravel;
 
-use HDSSolutions\Finpar\Models\Branch;
-use HDSSolutions\Finpar\Models\Currency;
-use HDSSolutions\Finpar\Models\Warehouse;
-use HDSSolutions\Finpar\Models\CashBook;
+use HDSSolutions\Laravel\Models\Branch;
+use HDSSolutions\Laravel\Models\Currency;
+use HDSSolutions\Laravel\Models\Warehouse;
+use HDSSolutions\Laravel\Models\CashBook;
 
 class POS {
 

@@ -1,6 +1,6 @@
 <?php
 
-use HDSSolutions\Finpar\POS;
+use HDSSolutions\Laravel\POS;
 
 if (!function_exists('pos_settings')) {
     function pos_settings():POS {

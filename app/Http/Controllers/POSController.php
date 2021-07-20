@@ -1,30 +1,30 @@
 <?php
 
-namespace HDSSolutions\Finpar\Http\Controllers;
+namespace HDSSolutions\Laravel\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Closure;
-use HDSSolutions\Finpar\Contracts\PaymentContract;
-use HDSSolutions\Finpar\Http\Request;
-use HDSSolutions\Finpar\Interfaces\Document;
-use HDSSolutions\Finpar\Models\Card;
-use HDSSolutions\Finpar\Models\CashBook;
-use HDSSolutions\Finpar\Models\CashLine;
-use HDSSolutions\Finpar\Models\Check;
-use HDSSolutions\Finpar\Models\Credit;
-use HDSSolutions\Finpar\Models\CreditNote;
-use HDSSolutions\Finpar\Models\Customer;
-use HDSSolutions\Finpar\Models\Employee;
-use HDSSolutions\Finpar\Models\Invoice;
-use HDSSolutions\Finpar\Models\Order;
-use HDSSolutions\Finpar\Models\OrderLine;
-use HDSSolutions\Finpar\Models\Payment;
-use HDSSolutions\Finpar\Models\Product;
-use HDSSolutions\Finpar\Models\PromissoryNote;
-use HDSSolutions\Finpar\Models\Receipment;
-use HDSSolutions\Finpar\Models\ReceipmentInvoice;
-use HDSSolutions\Finpar\Models\ReceipmentPayment;
-use HDSSolutions\Finpar\Models\Variant;
+use HDSSolutions\Laravel\Contracts\PaymentContract;
+use HDSSolutions\Laravel\Http\Request;
+use HDSSolutions\Laravel\Interfaces\Document;
+use HDSSolutions\Laravel\Models\Card;
+use HDSSolutions\Laravel\Models\CashBook;
+use HDSSolutions\Laravel\Models\CashLine;
+use HDSSolutions\Laravel\Models\Check;
+use HDSSolutions\Laravel\Models\Credit;
+use HDSSolutions\Laravel\Models\CreditNote;
+use HDSSolutions\Laravel\Models\Customer;
+use HDSSolutions\Laravel\Models\Employee;
+use HDSSolutions\Laravel\Models\Invoice;
+use HDSSolutions\Laravel\Models\Order;
+use HDSSolutions\Laravel\Models\OrderLine;
+use HDSSolutions\Laravel\Models\Payment;
+use HDSSolutions\Laravel\Models\Product;
+use HDSSolutions\Laravel\Models\PromissoryNote;
+use HDSSolutions\Laravel\Models\Receipment;
+use HDSSolutions\Laravel\Models\ReceipmentInvoice;
+use HDSSolutions\Laravel\Models\ReceipmentPayment;
+use HDSSolutions\Laravel\Models\Variant;
 use Illuminate\Support\Facades\DB;
 
 class POSController extends Controller {

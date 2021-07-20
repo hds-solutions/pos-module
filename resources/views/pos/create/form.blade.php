@@ -17,8 +17,8 @@
     {{-- helper="pos::pos.customer_id.?" --}} />
 
 <x-backend-form-options :resource="null" name="payment_rule" required
-    :values="\HDSSolutions\Finpar\Models\Invoice::PAYMENT_RULES"
-    default="{{ \HDSSolutions\Finpar\Models\Invoice::PAYMENT_RULE_Cash }}"
+    :values="\HDSSolutions\Laravel\Models\Invoice::PAYMENT_RULES"
+    default="{{ \HDSSolutions\Laravel\Models\Invoice::PAYMENT_RULE_Cash }}"
 
     label="pos::pos.payment_rule.0"
     placeholder="pos::pos.payment_rule._"
