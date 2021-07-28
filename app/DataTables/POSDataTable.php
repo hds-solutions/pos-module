@@ -23,7 +23,7 @@ class POSDataTable extends Base\DataTable {
             Column::make('name')
                 ->title( __('pos::empty.name.0') ),
 
-            Column::make('actions'),
+            Column::computed('actions'),
         ];
     }
 

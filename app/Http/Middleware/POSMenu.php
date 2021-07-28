@@ -12,7 +12,7 @@ class POSMenu extends Base\Menu {
         $sub = backend()->menu()
             ->add(__('pos::pos.nav'), [
                 'nickname'  => 'pos',
-                'icon'      => 'cogs',
+                'icon'      => 'donate',
             ])->data('priority', 700);
 
         // get sales menu group
