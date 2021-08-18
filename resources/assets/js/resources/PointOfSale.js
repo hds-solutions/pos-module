@@ -3,7 +3,7 @@ import Document from '../../../../../backend-module/resources/assets/js/resource
 import OrderLine from './OrderLine';
 import PaymentLine from './PaymentLine';
 
-export default class POS extends Document {
+export default class PointOfSale extends Document {
 
     constructor() {
         super();

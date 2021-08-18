@@ -8,7 +8,7 @@
                     default="{{ $old['invoice_id'] ?? $selected?->id }}"
 
                     filtered-by='[name="partnerable_id"]' filtered-using="partnerable"
-                    data-filtered-keep-id="true"
+                    data-filtered-keep-id="true" data-filtered-init="false"
 
                     show="document_number - transacted_at_pretty - total_pretty" {{-- title="code" --}}
                     append="partnerable:partnerable_id,total,pending-amount:pending_amount"

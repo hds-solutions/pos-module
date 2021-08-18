@@ -83,9 +83,8 @@ return redirect()->route('backend.payment.create');
         // save resource
         if (!$resource->save())
             // redirect with errors
-            return back()
-                ->withErrors( $resource->errors() )
-                ->withInput();
+            return back()->withInput()
+                ->withErrors( $resource->errors() );
 
         // sync receipment invoices
         if (($redirect = $this->saveInvoices($resource, $request->get('invoices'))) !== true)
@@ -151,6 +150,8 @@ return redirect()->route('backend.payment.create');
                             ]));
 
                     $paymentResource = $cash->lines()->make([
+                        'transacted_at'     => $resource->transacted_at,
+                        'currency_id'       => pos_settings()->currency()->id,
                         'cash_type'         => CashLine::CASH_TYPE_Receipment,
                         'description'       => __('pos::payment.payment.cash-line.description', [
                             'receipment'    => $resource->document_number,
@@ -162,7 +163,6 @@ return redirect()->route('backend.payment.create');
 
                 case Payment::PAYMENT_TYPE_Card:
                     $paymentResource = new Card([
-                        'document_number'   => 1234, // TODO: Generate Card.document_number
                         'card_holder'       => $payment['card_holder'],
                         'card_number'       => $payment['card_number'],
                         'is_credit'         => filter_var($payment['is_credit'], FILTER_VALIDATE_BOOLEAN),
@@ -172,7 +172,7 @@ return redirect()->route('backend.payment.create');
 
                 case Payment::PAYMENT_TYPE_Credit:
                     $paymentResource = new Credit([
-                        'document_number'   => 1234, // TODO: Generate Credit.document_number
+                        'document_number'   => Credit::nextDocumentNumber(),
                         'interest'          => $payment['interest'],
                         'dues'              => $payment['dues'],
                         'payment_amount'    => $payment['payment_amount'],
@@ -181,8 +181,7 @@ return redirect()->route('backend.payment.create');
 
                 case Payment::PAYMENT_TYPE_Check:
                     $paymentResource = new Check([
-                        'bank_name'         => $payment['bank_name'],
-                        'bank_account'      => $payment['bank_account'],
+                        'bank_id'           => $payment['bank_id'],
                         'account_holder'    => $payment['account_holder'],
                         'due_date'          => $payment['due_date'],
                         'document_number'   => $payment['check_number'],

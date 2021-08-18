@@ -48,7 +48,7 @@
     :values="backend()->currencies()"
 
     foreign="currencies" foreign-add-label="cash::currencies.add"
-    append="decimals" default="{{ backend()->currency()->id }}"
+    append="decimals" default="{{ backend()->currency()?->id }}"
 
     label="sales::receipment.currency_id.0"
     placeholder="sales::receipment.currency_id._"

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use HDSSolutions\Laravel\Http\Controllers\{
     POSController,
+
+    PointOfSaleController,
     PaymentController,
 };
 
@@ -13,25 +15,29 @@ Route::group([
     // name prefix
     $name_prefix = [ 'as' => 'backend' ];
 
+    Route::resource('pos',          POSController::class,   $name_prefix)
+        ->parameters([ 'pos' => 'resource' ])
+        ->name('index', 'backend.pos');
+
     Route::group([
-        'prefix'        => 'pos',
+        'prefix'        => 'pointofsale',
         'middleware'    => [ 'permission:pos' ],
     ], function() {
 
-        Route::get('/',             [ POSController::class, 'index' ])
-            ->name('backend.pos');
-        Route::post('/',            [ POSController::class, 'session' ])
-            ->name('backend.pos.session');
+        Route::get('/',             [ PointOfSaleController::class, 'index' ])
+            ->name('backend.pointofsale');
+        Route::post('/',            [ PointOfSaleController::class, 'session' ])
+            ->name('backend.pointofsale.session');
 
-        Route::get('create',        [ POSController::class, 'create' ])
-            ->name('backend.pos.create');
-        Route::post('create',       [ POSController::class, 'store' ])
-            ->name('backend.pos.store');
+        Route::get('create',        [ PointOfSaleController::class, 'create' ])
+            ->name('backend.pointofsale.create');
+        Route::post('create',       [ PointOfSaleController::class, 'store' ])
+            ->name('backend.pointofsale.store');
 
-        Route::get('{resource}',    [ POSController::class, 'show' ])
-            ->name('backend.pos.show');
-        Route::post('{resource}',   [ POSController::class, 'pay' ])
-            ->name('backend.pos.pay');
+        Route::get('{resource}',    [ PointOfSaleController::class, 'show' ])
+            ->name('backend.pointofsale.show');
+        Route::post('{resource}',   [ PointOfSaleController::class, 'pay' ])
+            ->name('backend.pointofsale.pay');
 
     });
 

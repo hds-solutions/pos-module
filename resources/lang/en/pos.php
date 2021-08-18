@@ -1,8 +1,35 @@
 <?php return [
 
-    'title'     => 'POS',
-    'create'    => 'POS',
-    'show'      => 'POS',
+    'nav-group' => 'POS',
+    'nav'       => 'POS Settings',
+
+    'nav'           => 'POS',
+
+    'title'         => 'POS',
+    'description'   => 'POS description',
+
+    'index'         => 'POS list',
+    'create'        => 'Create new POS Settings',
+    'add'           => 'Add new POS ...',
+    'show'          => 'POS Details',
+    'edit'          => 'Edit POS',
+
+    'save'          => 'Save',
+    'save-create'   => 'Save & Import Lines',
+    'cancel'        => 'Cancel',
+
+
+    'name'          => [
+        'Name',
+        '_' => 'Name',
+        '?' => 'Name help text',
+    ],
+
+    'cash_book_id'       => [
+        'CashBook',
+        '_' => 'CashBook',
+        '?' => 'CashBook help text',
+    ],
 
     'customer_id'       => [
         'Customer',
@@ -14,6 +41,18 @@
         'Currency',
         '_' => 'Currency',
         '?' => 'Currency help text',
+    ],
+
+    'employees'         => [
+        'Employees',
+        '_' => 'Employees',
+        '?' => 'Employees help text',
+
+        'employee_id'   => [
+            'Employee',
+            '_' => 'Employee',
+            '?' => 'Employee help text',
+        ]
     ],
 
     'branch_id'         => [

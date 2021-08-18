@@ -6,9 +6,11 @@
     append="decimals" show="code"
     class="d-none" />
 
-<x-form-multiple name="payments" values-as="creditNotes"
-    :values="$resource->partnerable->creditNotes" :selecteds="[]" grouped old-filter-fields="payment_type,payment_amount"
-    contents-size="xxl" contents-view="pos::pos.show.payment" data-type="pos"
+<x-form-multiple name="payments"
+    :values="$resource->partnerable->creditNotes" values-as="creditNotes"
+    :extra="$banks" extra-as="banks"
+    :selecteds="[]" grouped old-filter-fields="payment_type,payment_amount"
+    contents-size="xxl" contents-view="pos::pointofsale.show.payment" data-type="pointofsale"
 
     card="bg-light" container-class="py-2">
 
@@ -36,5 +38,5 @@
 </x-form-multiple>
 
 <x-backend-form-controls
-    submit="pos::pos.save"
-    cancel="pos::pos.cancel" cancel-route="backend.pos" />
+    submit="pos::pointofsale.save"
+    cancel="pos::pointofsale.cancel" cancel-route="backend.pointofsale" />

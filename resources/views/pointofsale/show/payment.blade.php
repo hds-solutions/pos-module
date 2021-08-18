@@ -40,21 +40,27 @@
     <div class="form-row mt-2" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Check }}">
         <div class="col offset-2">
             {{-- Check --}}
-            <x-form-input type="text" :resource="null" name="payments[bank_name][]"
+            <x-form-foreign name="payments[bank_id][]"
+                :values="$banks ?? []" default="{{ $old['bank_id'] ?? null }}"
+                foreign="banks" foreign-add-label="banking::banks.add"
+
+                placeholder="payments::check.bank_id._"
+                {{-- helper="payments::payment.bank_id.?" --}} />
+            {{-- <x-form-input type="text" :resource="null" name="payments[bank_name][]"
                 default="{{ $old['bank_name'] ?? null }}"
-                placeholder="payments::payment.bank_name._" />
-            <x-form-input type="text" :resource="null" name="payments[bank_account][]"
+                placeholder="payments::payment.bank_name._" /> --}}
+            {{-- <x-form-input type="text" :resource="null" name="payments[bank_account][]"
                 default="{{ $old['bank_account'] ?? null }}"
-                placeholder="payments::payment.bank_account._" />
+                placeholder="payments::payment.bank_account._" /> --}}
             <x-form-input type="text" :resource="null" name="payments[account_holder][]"
                 default="{{ $old['account_holder'] ?? null }}"
-                placeholder="payments::payment.account_holder._" />
+                placeholder="payments::check.account_holder._" />
             <x-form-input type="text" :resource="null" name="payments[check_number][]"
                 default="{{ $old['check_number'] ?? null }}"
-                placeholder="payments::payment.check_number._" />
+                placeholder="payments::check.document_number._" />
             <x-form-date name="payments[due_date][]"
                 default="{{ $old['due_date'] ?? null }}"
-                placeholder="payments::payment.due_date._" />
+                placeholder="payments::check.due_date._" />
         </div>
     </div>
 

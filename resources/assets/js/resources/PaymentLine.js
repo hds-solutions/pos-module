@@ -16,7 +16,6 @@ export default class PaymentLine extends DocumentLine {
     }
 
     _init() {
-        super._init();
         // get payment type selector
         let paymentType = this.container.querySelector('[name="payments[payment_type][]"]'),
             paymentAmount = this.container.querySelector('[name="payments[payment_amount][]"]'),
@@ -89,9 +88,9 @@ export default class PaymentLine extends DocumentLine {
         });
 
         // set totals
-        this.document.paymentsAmount.value = total > 0 ? total : '';
+        this.document.total.value = total > 0 ? total : '';
         // fire format
-        if (total > 0) this.fire('blur', this.document.paymentsAmount);
+        if (total > 0) this.fire('blur', this.document.total);
     }
 
 }

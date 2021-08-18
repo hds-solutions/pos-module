@@ -10,7 +10,7 @@ class POSMenu extends Base\Menu {
     public function handle($request, Closure $next) {
         // // create a submenu
         $sub = backend()->menu()
-            ->add(__('pos::pos.nav'), [
+            ->add(__('pos::pos.nav-group'), [
                 'nickname'  => 'pos',
                 'icon'      => 'donate',
             ])->data('priority', 700);
@@ -21,6 +21,8 @@ class POSMenu extends Base\Menu {
         $this
             // append items to submenu
             ->pos($sub)
+
+            ->pointofsale($sub)
             ->payment($sub)
             ;
 
@@ -33,6 +35,16 @@ class POSMenu extends Base\Menu {
             $menu->add(__('pos::pos.nav'), [
                 'route'     => 'backend.pos',
                 'icon'      => 'pos'
+            ]);
+
+        return $this;
+    }
+
+    private function pointofsale(&$menu) {
+        if (Route::has('backend.pointofsale') && $this->can('pointofsale'))
+            $menu->add(__('pos::pointofsale.nav'), [
+                'route'     => 'backend.pointofsale',
+                'icon'      => 'pointofsale'
             ]);
 
         return $this;

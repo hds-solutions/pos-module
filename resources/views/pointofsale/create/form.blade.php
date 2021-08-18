@@ -12,30 +12,30 @@
     foreign-add-label="customers::customers.add"
     show="business_name"
 
-    label="pos::pos.customer_id.0"
-    placeholder="pos::pos.customer_id._"
-    {{-- helper="pos::pos.customer_id.?" --}} />
+    label="pos::pointofsale.customer_id.0"
+    placeholder="pos::pointofsale.customer_id._"
+    {{-- helper="pos::pointofsale.customer_id.?" --}} />
 
 <x-backend-form-options :resource="null" name="payment_rule" required
     :values="\HDSSolutions\Laravel\Models\Invoice::PAYMENT_RULES"
-    default="{{ \HDSSolutions\Laravel\Models\Invoice::PAYMENT_RULE_Cash }}"
+    default="{{ Invoice::PAYMENT_RULE_Cash }}"
 
-    label="pos::pos.payment_rule.0"
-    placeholder="pos::pos.payment_rule._"
-    {{-- helper="pos::pos.payment_rule.?" --}} />
+    label="pos::pointofsale.payment_rule.0"
+    placeholder="pos::pointofsale.payment_rule._"
+    {{-- helper="pos::pointofsale.payment_rule.?" --}} />
 
 <x-backend-form-text name="stamping" required
     :default="$highs['stamping'] ?? null"
 
-    label="pos::pos.stamping.0"
-    placeholder="pos::pos.stamping._"
-    {{-- helper="pos::pos.stamping.?" --}} />
+    label="pos::pointofsale.stamping.0"
+    placeholder="pos::pointofsale.stamping._"
+    {{-- helper="pos::pointofsale.stamping.?" --}} />
 
 <x-backend-form-text name="document_number" required
     :default="$highs['document_number'] ?? null"
-    label="pos::pos.document_number.0"
-    placeholder="pos::pos.document_number._"
-    {{-- helper="pos::pos.document_number.?" --}} />
+    label="pos::pointofsale.document_number.0"
+    placeholder="pos::pointofsale.document_number._"
+    {{-- helper="pos::pointofsale.document_number.?" --}} />
 
 {{-- TODO ADDRESSES--}}
 {{-- <x-backend-form-foreign :resource="$resource ?? null" name="warehouse_id" required
@@ -44,16 +44,16 @@
 
     foreign-add-label="pos::warehouses.add"
 
-    label="pos::pos.warehouse_id.0"
-    placeholder="pos::pos.warehouse_id._"
-    helper="pos::pos.warehouse_id.?" /> --}}
+    label="pos::pointofsale.warehouse_id.0"
+    placeholder="pos::pointofsale.warehouse_id._"
+    helper="pos::pointofsale.warehouse_id.?" /> --}}
 
 <x-backend-form-multiple name="lines" values-as="products"
     :values="$products" :selecteds="[]" grouped old-filter-fields="product_id,quantity"
-    contents-size="xxl" contents-view="pos::pos.create.line" class="my-2" data-type="pos"
+    contents-size="xxl" contents-view="pos::pointofsale.create.line" class="my-2" data-type="pointofsale"
     card="bg-light"
 
-    label="pos::pos.lines.0">
+    label="pos::pointofsale.lines.0">
 
     <x-slot name="card-footer">
         <div class="row">
@@ -79,5 +79,5 @@
 </x-backend-form-multiple>
 
 <x-backend-form-controls
-    submit="pos::pos.save"
-    cancel="pos::pos.cancel" cancel-route="backend.pos" />
+    submit="pos::pointofsale.save"
+    cancel="pos::pointofsale.cancel" cancel-route="backend.pointofsale" />

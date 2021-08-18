@@ -1,17 +1,3 @@
-<x-form-foreign name="payments[paymentable_id][]" :required="$selected !== null"
-    :values="$payments"
-    default="{{ $old['paymentable_id'] ?? $selected?->pivot->paymentable_id }}"
-
-    filtered-by='[name="partnerable_id"]' filtered-using="partnerable"
-    data-filtered-keep-id="true"
-
-    show="pivot.paymentable_type {id} - pivot.payment_amount" {{-- title="code" --}}
-    append="partnerable:partnerable_id"
-
-    label="sales::receipment.invoices.paymentable_id.0"
-    placeholder="sales::receipment.invoices.paymentable_id._"
-    {{-- helper="sales::receipment.invoices.paymentable_id.?" --}} />
-
 <div class="col-10 col-lg-11">
     <x-backend-form-select :resource="$resource ?? null" name="payments[payment_type][]"
         :values="Payment::PAYMENT_TYPES" default="{{ $old['payment_type'] ?? Payment::PAYMENT_TYPE_Cash }}"
@@ -76,11 +62,12 @@
         <div class="col offset-2">
             {{-- CreditNote --}}
             <x-form-foreign name="payments[credit_note_id][]"
-                {{-- filtered-by="[name=customer_id]" filtered-using="customer" data-filtered-keep-id="true" --}}
+                filtered-by="[name=partnerable_id]" filtered-using="customer"
+                data-filtered-keep-id="true" data-filtered-init="false"
                 :values="$creditNotes" default="{{ $old['credit_note_id'] ?? null }}"
                 {{-- :values="$customers->pluck('creditNotes')->flatten()" --}}
 
-                show="payment_amount" append="customer:partnerable_id"
+                show="#document_number payment_amount" append="customer:partnerable_id"
 
                 placeholder="payments::payment.credit_note_id._"
                 {{-- helper="payments::payment.credit_note_id.?" --}} />

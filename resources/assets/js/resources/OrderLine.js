@@ -4,12 +4,15 @@ export default class OrderLine extends DocumentLine {
 
     #thousands;
     #fields = [];
+    #finder;
+    #loading = false;
 
     constructor(document, container) {
         super(document, container);
         this.#thousands = this.container.querySelectorAll('[name^="lines"][thousand]');
         this.#fields.push(...this.container.querySelectorAll('select'));
         this.#fields.push(...this.container.querySelectorAll('[name="lines[price][]"],[name="lines[quantity][]"]'));
+        this.#finder = this.container.querySelector('[name="product-finder"]');
         this._init();
     }
 
@@ -19,7 +22,6 @@ export default class OrderLine extends DocumentLine {
     }
 
     _init() {
-        super._init();
         // capture change on fields
         this.#fields.forEach(field => field.addEventListener('change', e => {
             // ignore if field doesn't have form (deleted line)
@@ -36,6 +38,67 @@ export default class OrderLine extends DocumentLine {
             // redirect event to listener
             this.updated(e);
         }));
+
+        // capture product finder event
+        this.#finder.addEventListener('keydown', e => {
+            // ignore if key isn't <enter>
+            if (e.keyCode !== 13) return false;
+            // disable default event
+            else e.preventDefault();
+
+            // parse quantity
+            let match, qty = (match = this.#finder.value.match(/^(\d*\.?\d*)\*/)) ? (match[1] ?? 1) : 1;
+            // remove quantity from code
+            if (qty !== null) {
+                // remove qty from code
+                this.#finder.value = this.#finder.value.replace(qty+'*', '');
+                // set qty on field
+                this.container.querySelector('[name="lines[quantity][]"]').value = qty;
+            }
+
+            // disable field while working
+            this.#finder.setAttribute('disabled', true);
+
+            // find product
+            $.ajax({
+                method: 'POST',
+                url: '/orders/product',
+                data: {
+                    _token: this.document.token,
+                    product: this.#finder.value,
+                },
+                success: data => {
+                    // active flag to prevent multiple ajax requests
+                    this.#loading = true;
+
+                    // select product
+                    Application.$(this.container.querySelector('[name="lines[product_id][]"]'))
+                        .selectpicker('val', data.variant !== null ? data.variant.product_id : (data.product !== null ? data.product.id : null));
+                    // fire change to enable variants selector
+                    this.fire('change', this.container.querySelector('[name="lines[product_id][]"]'));
+
+                    // select variant
+                    Application.$(this.container.querySelector('[name="lines[variant_id][]"]'))
+                        .selectpicker('val', data.variant !== null ? data.variant.id : null);
+                    // disable flag, next change event fires ajax requests
+                    this.#loading = false;
+                    // fire change to update price
+                    this.fire('change', this.container.querySelector('[name="lines[variant_id][]"]'));
+
+                    // re-enable field
+                    this.#finder.removeAttribute('disabled');
+
+                    // check if a product/variant was found
+                    if (data.variant === null && data.product === null) return this.#finder.select();
+
+                    // remove product finder
+                    this.#finder.remove();
+
+                    // set focus on next line
+                    this.document.lines.last().container.querySelector('[name="'+this.#finder.name+'"]').focus();
+                },
+            });
+        });
     }
 
     #loadProduct(field) {
@@ -47,7 +110,7 @@ export default class OrderLine extends DocumentLine {
         if ((option = this.container.querySelector('[name="lines[variant_id][]"]').selectedOptions[0]).value) data.variant = option.value;
         if ((option = field.form.querySelector('[name="currency_id"]').selectedOptions[0]).value) data.currency = option.value;
         // ignore if no product
-        if (!data.product) return;
+        if (this.#loading || !data.product) return;
         // request current price quantity
         $.ajax({
             method: 'POST',

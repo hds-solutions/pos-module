@@ -1,6 +1,6 @@
 import Application from '../../../../backend-module/resources/assets/js/resources/Application';
-import POS from './resources/POS';
+import PointOfSale from './resources/PointOfSale';
 import Payment from './resources/Payment';
 
-Application.register('pos', POS);
+Application.register('pointofsale', PointOfSale);
 Application.register('payment', Payment);
