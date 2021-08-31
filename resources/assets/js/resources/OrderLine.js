@@ -62,7 +62,7 @@ export default class OrderLine extends DocumentLine {
             // find product
             $.ajax({
                 method: 'POST',
-                url: '/orders/product',
+                url: '/sales/product',
                 data: {
                     _token: this.document.token,
                     product: this.#finder.value,
@@ -114,7 +114,7 @@ export default class OrderLine extends DocumentLine {
         // request current price quantity
         $.ajax({
             method: 'POST',
-            url: '/orders/price',
+            url: '/sales/price',
             data: data,
             // update current price for product+variant on locator
             success: data => {
