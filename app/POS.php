@@ -6,6 +6,7 @@ use HDSSolutions\Laravel\Models\Branch;
 use HDSSolutions\Laravel\Models\Currency;
 use HDSSolutions\Laravel\Models\Warehouse;
 use HDSSolutions\Laravel\Models\CashBook;
+use HDSSolutions\Laravel\Models\Stamping;
 
 class POS {
 
@@ -13,8 +14,17 @@ class POS {
     private ?Branch $branch;
     private ?Warehouse $warehouse;
     private ?CashBook $cashBook;
+    private ?Stamping $stamping;
+    private ?string $prepend;
 
-    public function configure(int|Currency $currency, int|Branch $branch, int|Warehouse $warehouse, int|CashBook $cashBook) {
+    public function configure(
+        int|Currency $currency,
+        int|Branch $branch,
+        int|Warehouse $warehouse,
+        int|CashBook $cashBook,
+        int|Stamping $stamping,
+        string $prepend
+    ) {
         // save currency
         $this->currency = backend()->currencies()->firstWhere('id', $currency instanceof Currency ? $currency->id : $currency);
         session([ 'pos.currency' => $this->currency->getKey() ]);
@@ -27,6 +37,12 @@ class POS {
         // save cashBook
         $this->cashBook = $cashBook instanceof CashBook ? $cashBook : CashBook::findOrFail($cashBook);
         session([ 'pos.cashBook' => $this->cashBook->getKey() ]);
+        // save stamping
+        $this->stamping = $stamping instanceof Stamping ? $stamping : Stamping::findOrFail($stamping);
+        session([ 'pos.stamping' => $this->stamping->getKey() ]);
+        // save prepend
+        $this->prepend = $prepend;
+        session([ 'pos.prepend' => $this->prepend ]);
     }
 
     public function currency():?Currency {
@@ -49,6 +65,16 @@ class POS {
         return $this->cashBook ??= $this->loadCashBook();
     }
 
+    public function stamping():?Stamping {
+        // return configured model
+        return $this->stamping ??= $this->loadStamping();
+    }
+
+    public function prepend():?string {
+        // return configured model
+        return $this->prepend ??= session('pos.prepend');
+    }
+
     private function loadCurrency():?Currency  {
         // load configured model from session
         return $this->currency = backend()->currencies()->firstWhere('id', session('pos.currency') );
@@ -67,6 +93,11 @@ class POS {
     private function loadCashBook():?CashBook {
         // load configured model from session
         return $this->cashBook = CashBook::firstWhere('id', session('pos.cashBook') );
+    }
+
+    private function loadStamping():?Stamping {
+        // load configured model from session
+        return $this->stamping = Stamping::firstWhere('id', session('pos.stamping') );
     }
 
 }

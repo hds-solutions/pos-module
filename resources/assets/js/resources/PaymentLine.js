@@ -23,8 +23,7 @@ export default class PaymentLine extends DocumentLine {
             interest = this.container.querySelector('[name="payments[interest][]"]'),
             dues = this.container.querySelector('[name="payments[dues][]"]'),
             // Check payment type fields
-            bank_name = this.container.querySelector('[name="payments[bank_name][]"]'),
-            bank_account = this.container.querySelector('[name="payments[bank_account][]"]'),
+            bank_id = this.container.querySelector('[name="payments[bank_id][]"]'),
             account_holder = this.container.querySelector('[name="payments[account_holder][]"]'),
             check_number = this.container.querySelector('[name="payments[check_number][]"]'),
             due_date = this.container.querySelector('[name="payments[due_date][]"]'),
@@ -38,7 +37,7 @@ export default class PaymentLine extends DocumentLine {
         this.#fields = new Map([
             [ Payment.PAYMENT_TYPE_Cash,        [] ],
             [ Payment.PAYMENT_TYPE_Credit,      [ interest, dues ] ],
-            [ Payment.PAYMENT_TYPE_Check,       [ bank_name, bank_account, account_holder, check_number, due_date ] ],
+            [ Payment.PAYMENT_TYPE_Check,       [ bank_id, account_holder, check_number, due_date ] ],
             [ Payment.PAYMENT_TYPE_CreditNote,  [ credit_note_id ] ],
             [ Payment.PAYMENT_TYPE_Card,        [ card_holder, card_number, is_credit ] ],
         ]);

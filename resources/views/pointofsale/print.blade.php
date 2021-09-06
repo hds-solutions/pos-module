@@ -7,13 +7,17 @@
     <div class="card mb-3">
         <div class="card-header bg-primary text-white font-weight-bold">
             <div class="row">
-                <div class="col-6">
+                <div class="col-6 d-flex align-items-center">
                     <i class="fas fa-company-plus"></i>
-                    @lang('pos::pointofsale.show') <span class="font-weight-normal">[ {{ pos_settings()->currency()->name }} | {{ pos_settings()->branch()->name }} | {{ pos_settings()->warehouse()->name }} ]</span>
+                    @lang('pos::pointofsale.show')<small class="font-weight-normal ml-2">[ {{ pos_settings()->currency()->name }} | {{ pos_settings()->branch()->name }} | {{ pos_settings()->warehouse()->name }} ]</small>
                 </div>
                 <div class="col-6 d-flex justify-content-end">
                     {{-- <a href="{{ route('backend.pointofsale.create') }}"
                         class="btn btn-sm btn-primary">@lang('pos::pointofsale.add')</a> --}}
+                    <button class="btn btn-sm btn-info"
+                        data-printable="{{ route('backend.invoices.print', $resource) }}" data-print="true">
+                        <i class="fas fa-print"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -142,10 +146,44 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('backend.pointofsale.pay', $resource) }}" enctype="multipart/form-data">
-                @csrf
-                @include('pos::pointofsale.show.form')
-            </form>
+            <div class="row">
+                <div class="col">
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th class="align-middle">{{-- @lang('sales::receipment.payments.payment_type.0') --}}</th>
+                                    <th class="align-middle">{{-- @lang('sales::receipment.payments.description.0') --}}</th>
+                                    <th class="align-middle text-right">@lang('sales::receipment.payments.payment_amount.0')</th>
+                                    <th class="align-middle text-right">@lang('sales::receipment.payments.used_amount.0')</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @foreach ($resource->receipments->first()->payments as $payment)
+                                    <tr>
+                                        <td class="align-middle">{{ __(Payment::PAYMENT_TYPES[$payment->receipmentPayment->payment_type]) }}</td>
+                                        <td class="align-middle">
+                                            {!! match($payment->receipmentPayment->payment_type) {
+                                                Payment::PAYMENT_TYPE_Cash          => $payment->cash->cashBook->name,
+                                                Payment::PAYMENT_TYPE_Card          => $payment->card_holder.' <small>**** **** **** '.$payment->card_number.'</small>',
+                                                Payment::PAYMENT_TYPE_Credit        => trans_choice('sales::receipment.payments.dues.0', $payment->dues, [ 'dues' => $payment->dues ]).' <small>'.$payment->interest.'%</small>',
+                                                Payment::PAYMENT_TYPE_Check         => $payment->document_number.'<small class="ml-2">'.$payment->bank_name.'</small>',
+                                                Payment::PAYMENT_TYPE_CreditNote    => $payment->document_number.'<small class="ml-2">'.$payment->payment_amount.'</small>',
+                                                default => null,
+                                            } !!}
+                                        </td>
+                                        <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
+                                        <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount - $payment->receipmentPayment->creditNote?->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
 
         </div>
     </div>

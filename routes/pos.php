@@ -38,6 +38,8 @@ Route::group([
             ->name('backend.pointofsale.show');
         Route::post('{resource}',   [ PointOfSaleController::class, 'pay' ])
             ->name('backend.pointofsale.pay');
+        Route::get('{resource}/print.pdf',  [ PointOfSaleController::class, 'print' ])
+            ->name('backend.pointofsale.print');
 
     });
 

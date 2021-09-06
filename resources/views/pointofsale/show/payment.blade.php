@@ -24,7 +24,7 @@
     </div>
 
     <div class="form-row mt-2" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Credit }}">
-        <div class="col offset-2">
+        <div class="col col-xl-6 offset-2">
             {{-- Credit --}}
             <x-form-input type="number" :resource="null" name="payments[interest][]"
                 value="{{ $old['interest'] ?? 0 }}"
@@ -38,7 +38,7 @@
     </div>
 
     <div class="form-row mt-2" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Check }}">
-        <div class="col offset-2">
+        <div class="col col-xl-6 offset-2">
             {{-- Check --}}
             <x-form-foreign name="payments[bank_id][]"
                 :values="$banks ?? []" default="{{ $old['bank_id'] ?? null }}"
@@ -65,7 +65,7 @@
     </div>
 
     <div class="form-row mt-2" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_CreditNote }}">
-        <div class="col offset-2">
+        <div class="col col-xl-6 offset-2">
             {{-- CreditNote --}}
             <x-form-foreign name="payments[credit_note_id][]"
                 {{-- filtered-by="[name=customer_id]" filtered-using="customer" data-filtered-keep-id="true" --}}
@@ -79,12 +79,12 @@
         </div>
     </div>
     <div class="form-row mt-2" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Promissory }}">
-        <div class="col offset-2">
+        <div class="col col-xl-6 offset-2">
             TODO: Promissory
         </div>
     </div>
     <div class="form-row mt-2" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Card }}">
-        <div class="col offset-2">
+        <div class="col col-xl-6 offset-2">
             <x-form-input name="payments[card_holder][]"
                 default="{{ $old['card_holder'] ?? null }}"
                 placeholder="payments::payment.card_holder._" />

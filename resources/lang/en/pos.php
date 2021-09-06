@@ -18,7 +18,6 @@
     'save-create'   => 'Save & Import Lines',
     'cancel'        => 'Cancel',
 
-
     'name'          => [
         'Name',
         '_' => 'Name',
@@ -31,10 +30,23 @@
         '?' => 'CashBook help text',
     ],
 
+    'prepend'           => [
+        'Prepend',
+        '_' => 'Prepend',
+        '?' => 'Prepend help text',
+        'optional' => '(optional) Prepend',
+    ],
+
     'customer_id'       => [
         'Customer',
         '_' => 'Customer',
         '?' => 'Customer help text',
+    ],
+
+    'stamping_id'       => [
+        'Stamping',
+        '_' => 'Stamping',
+        '?' => 'Stamping help text',
     ],
 
     'currency_id'       => [

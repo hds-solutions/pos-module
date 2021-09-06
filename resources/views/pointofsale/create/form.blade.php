@@ -6,16 +6,6 @@
     append="decimals" show="code"
     class="d-none" />
 
-<x-backend-form-foreign name="customer_id" required
-    foreign="customers" :values="$customers"
-
-    foreign-add-label="customers::customers.add"
-    show="business_name"
-
-    label="pos::pointofsale.customer_id.0"
-    placeholder="pos::pointofsale.customer_id._"
-    {{-- helper="pos::pointofsale.customer_id.?" --}} />
-
 <x-backend-form-options :resource="null" name="payment_rule" required
     :values="\HDSSolutions\Laravel\Models\Invoice::PAYMENT_RULES"
     default="{{ Invoice::PAYMENT_RULE_Cash }}"
@@ -24,15 +14,10 @@
     placeholder="pos::pointofsale.payment_rule._"
     {{-- helper="pos::pointofsale.payment_rule.?" --}} />
 
-<x-backend-form-text name="stamping" required
-    :default="$highs['stamping'] ?? null"
-
-    label="pos::pointofsale.stamping.0"
-    placeholder="pos::pointofsale.stamping._"
-    {{-- helper="pos::pointofsale.stamping.?" --}} />
-
 <x-backend-form-text name="document_number" required
     :default="$highs['document_number'] ?? null"
+    :prepend="pos_settings()->prepend()"
+
     label="pos::pointofsale.document_number.0"
     placeholder="pos::pointofsale.document_number._"
     {{-- helper="pos::pointofsale.document_number.?" --}} />
@@ -47,6 +32,16 @@
     label="pos::pointofsale.warehouse_id.0"
     placeholder="pos::pointofsale.warehouse_id._"
     helper="pos::pointofsale.warehouse_id.?" /> --}}
+
+<x-backend-form-foreign name="customer_id" required
+    foreign="customers" :values="$customers"
+
+    foreign-add-label="customers::customers.add"
+    show="business_name"
+
+    label="pos::pointofsale.customer_id.0"
+    placeholder="pos::pointofsale.customer_id._"
+    {{-- helper="pos::pointofsale.customer_id.?" --}} />
 
 <x-backend-form-multiple name="lines" values-as="products"
     :values="$products" :selecteds="[]" grouped old-filter-fields="product_id,quantity"

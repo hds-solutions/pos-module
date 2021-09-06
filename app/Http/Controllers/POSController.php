@@ -7,6 +7,7 @@ use HDSSolutions\Laravel\DataTables\POSDataTable as DataTable;
 use HDSSolutions\Laravel\Http\Request;
 use HDSSolutions\Laravel\Models\POS as Resource;
 use HDSSolutions\Laravel\Models\Employee;
+use HDSSolutions\Laravel\Models\Stamping;
 
 class POSController extends Controller {
 
@@ -29,11 +30,13 @@ class POSController extends Controller {
     }
 
     public function create(Request $request) {
+        // load stampings
+        $stampings = Stamping::all();
         // load employees
         $employees = Employee::all();
 
         // show create form
-        return view('pos::pos.create', compact('employees'));
+        return view('pos::pos.create', compact('stampings', 'employees'));
     }
 
     public function store(Request $request) {
@@ -68,11 +71,14 @@ class POSController extends Controller {
     }
 
     public function edit(Request $request, Resource $resource) {
+        // load stampings
+        $stampings = Stamping::all();
         // load employees
         $employees = Employee::all();
 
         // show edit form
         return view('pos::pos.edit', compact('resource',
+            'stampings',
             'employees'
         ));
     }

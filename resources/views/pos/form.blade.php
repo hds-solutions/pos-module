@@ -37,6 +37,21 @@
 
 </x-backend-form-foreign>
 
+<x-backend-form-foreign :resource="$resource ?? null" name="stamping_id" required
+    :values="$stampings" show="document_number" data-show-subtext="true"
+    subtext="valid_from_pretty - valid_until_pretty"
+
+    foreign="stampings" foreign-add-label="cash::stampings.add"
+    data-live-search="true"
+
+    label="pos::pos.stamping_id.0"
+    placeholder="pos::pos.stamping_id._"
+    {{-- helper="pos::pos.stamping_id.?" --}} />
+
+<x-backend-form-text :resource="$resource ?? null" name="prepend"
+    label="pos::pos.prepend.0"
+    placeholder="pos::pos.prepend.optional" />
+
 <x-backend-form-foreign :resource="$resource ?? null" name="cash_book_id" required
     :values="backend()->cashBooks()"
 

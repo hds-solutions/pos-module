@@ -11,6 +11,8 @@
                     <h6 class="card-subtitle mb-2">{{ currency($setting->currency_id)->name }}</h6>
                     <p class="card-text text-dark mb-0">{{ $setting->warehouse->name }} <small>[{{ $setting->branch->name }}]</small></p>
                     <p class="card-text text-dark mb-0">{{ $setting->cashBook->name }}</p>
+                    <p class="card-text text-dark mb-0">{{ $setting->stamping->document_number }}</p>
+                    <p class="card-text text-dark mb-0">{{ $setting->prepend }}xxx</p>
                 </div>
             </div>
         </label>

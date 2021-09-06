@@ -7,6 +7,10 @@ use Yajra\DataTables\Html\Column;
 
 class POSDataTable extends Base\DataTable {
 
+    protected array $with = [
+        'stamping',
+    ];
+
     public function __construct() {
         parent::__construct(
             Resource::class,
@@ -22,6 +26,14 @@ class POSDataTable extends Base\DataTable {
 
             Column::make('name')
                 ->title( __('pos::pos.name.0') ),
+
+            Column::make('prepend')
+                ->title( __('pos::pos.prepend.0') ),
+
+            Column::make('stamping.document_number')
+                ->title( __('pos::pos.stamping_id.0') )
+                ->renderRaw('view:pos')
+                ->data( view('pos::pos.datatable.stamping')->render() ),
 
             Column::computed('actions'),
         ];

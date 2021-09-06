@@ -20,4 +20,11 @@ export default class PointOfSale extends Document {
         return null;
     }
 
+    static printable() {
+        // find print button
+        let print = document.querySelector('[data-printable]');
+        // check if button exists and fire click
+        if (print && print.dataset.print == 'true') this.fire('click', print);
+    }
+
 }

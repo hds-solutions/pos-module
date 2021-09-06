@@ -38,7 +38,9 @@ class PointOfSaleController extends Controller {
             if ( pos_settings()->currency() === null ||
                  pos_settings()->branch() === null ||
                  pos_settings()->warehouse() === null ||
-                 pos_settings()->cashBook() === null )
+                 pos_settings()->cashBook() === null ||
+                 pos_settings()->stamping() === null ||
+                 pos_settings()->prepend() === null )
                 // redirect to pos index
                 return redirect()->route('backend.pointofsale');
             // continue normal execution
@@ -58,6 +60,8 @@ class PointOfSaleController extends Controller {
                 branch:     $pos->branch_id,
                 warehouse:  $pos->warehouse_id,
                 cashBook:   $pos->cash_book_id,
+                stamping:   $pos->stamping_id,
+                prepend:    $pos->prepend,
             );
             // redirect to POS.create
             return redirect()->route('backend.pointofsale.create');
@@ -77,6 +81,8 @@ class PointOfSaleController extends Controller {
             branch:     $pos->branch_id,
             warehouse:  $pos->warehouse_id,
             cashBook:   $pos->cash_book_id,
+            stamping:   $pos->stamping_id,
+            prepend:    $pos->prepend,
         );
 
         // redirect to POS.create
@@ -96,8 +102,7 @@ class PointOfSaleController extends Controller {
         ])->get();
 
         $highs = [
-            'stamping'          => $stamping = Invoice::currentStamping(),
-            'document_number'   => Invoice::nextDocumentNumber( $stamping ),
+            'document_number'   => str_replace(pos_settings()->prepend(), '', pos_settings()->stamping()->next_document_number),
         ];
 
         // show main form
@@ -140,8 +145,8 @@ class PointOfSaleController extends Controller {
 
         // create inovice from order
         $invoice = Invoice::createFromOrder($order, [
-            'stamping'          => $request->input('stamping'),
-            'document_number'   => $request->input('document_number'),
+            'stamping_id'       => pos_settings()->stamping()->getKey(),
+            'document_number'   => pos_settings()->prepend().$request->input('document_number'),
             'is_credit'         => $request->input('payment_rule') == Invoice::PAYMENT_RULE_Credit,
         ]);
         // check if invoice was created
@@ -180,13 +185,14 @@ class PointOfSaleController extends Controller {
 
         // eager load resource data
         $resource->load([
-            'currency',
+            // 'currency',
+            'stamping',
             'partnerable' => fn($customer) => $customer->with([
                 // load available CreditNotes of Customer
                 'creditNotes' => fn($creditNote) => $creditNote->available()->with([ 'identity' ]),
             ]),
             'lines' => fn($line) => $line->with([
-                'currency',
+                // 'currency',
                 'product.images',
                 'variant' => fn($variant) => $variant->with([
                     'images',
@@ -213,6 +219,7 @@ class PointOfSaleController extends Controller {
         // create receipment
         $receipment = new Receipment([
             'document_number'   => Receipment::nextDocumentNumber(),
+            'transacted_at'     => now(),
         ]);
         $receipment->employee()->associate( $resource->employee );   // TODO: get employee from session
         $receipment->partnerable()->associate( $resource->partnerable );
@@ -340,8 +347,13 @@ class PointOfSaleController extends Controller {
         // commit transaction
         DB::commit();
 
-        // redirect to POS home
-        return redirect()->route('backend.pointofsale.create');
+        // redirect to print
+        return redirect()->route('backend.pointofsale.print', $resource);
+    }
+
+    public function print(Request $request, Invoice $resource) {
+        // show invoice with payment methods and print it
+        return view('pos::pointofsale.print', compact('resource'));
     }
 
     private function syncLines(Order $order, array $lines) {

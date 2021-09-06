@@ -22,6 +22,8 @@ class CreatePosTable extends Migration {
             $table->foreignTo('Branch');
             $table->foreignTo('Warehouse');
             $table->foreignTo('CashBook');
+            $table->foreignTo('Stamping');
+            $table->string('prepend')->nullable();
         });
 
         $schema->create('pos_employee', function(Blueprint $table) {

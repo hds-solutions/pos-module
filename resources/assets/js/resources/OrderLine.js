@@ -91,9 +91,6 @@ export default class OrderLine extends DocumentLine {
                     // check if a product/variant was found
                     if (data.variant === null && data.product === null) return this.#finder.select();
 
-                    // remove product finder
-                    this.#finder.remove();
-
                     // set focus on next line
                     this.document.lines.last().container.querySelector('[name="'+this.#finder.name+'"]').focus();
                 },
@@ -111,6 +108,8 @@ export default class OrderLine extends DocumentLine {
         if ((option = field.form.querySelector('[name="currency_id"]').selectedOptions[0]).value) data.currency = option.value;
         // ignore if no product
         if (this.#loading || !data.product) return;
+        // remove product finder
+        this.#finder.remove();
         // request current price quantity
         $.ajax({
             method: 'POST',

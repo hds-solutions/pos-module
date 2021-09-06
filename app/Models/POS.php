@@ -22,6 +22,10 @@ class POS extends X_POS {
         return $this->belongsTo(CashBook::class);
     }
 
+    public function stamping() {
+        return $this->belongsTo(Stamping::class);
+    }
+
     public function employees() {
         return $this->belongsToMany(Employee::class, 'pos_employee', 'pos_id')
             ->using(POSEmployee::class)

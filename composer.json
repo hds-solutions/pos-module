@@ -17,6 +17,7 @@
     "require": {
         "php": "^8.0",
         "hds-solutions/backend-module": "dev-develop",
+        "hds-solutions/sales-module": "dev-develop",
         "hds-solutions/payments-module": "dev-develop"
     },
     "autoload": {
