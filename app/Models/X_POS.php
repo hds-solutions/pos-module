@@ -20,6 +20,7 @@ abstract class X_POS extends Base\Model {
         'warehouse_id',
         'cash_book_id',
         'stamping_id',
+        'customer_id',
         'prepend',
     ];
 

@@ -40,7 +40,8 @@ class PointOfSaleController extends Controller {
                  pos_settings()->warehouse() === null ||
                  pos_settings()->cashBook() === null ||
                  pos_settings()->stamping() === null ||
-                 pos_settings()->prepend() === null )
+                 pos_settings()->prepend() === null  ||
+                 pos_settings()->customer() === null )
                 // redirect to pos index
                 return redirect()->route('backend.pointofsale');
             // continue normal execution
@@ -62,6 +63,7 @@ class PointOfSaleController extends Controller {
                 cashBook:   $pos->cash_book_id,
                 stamping:   $pos->stamping_id,
                 prepend:    $pos->prepend,
+                customer:   $pos->customer_id,
             );
             // redirect to POS.create
             return redirect()->route('backend.pointofsale.create');
@@ -83,6 +85,7 @@ class PointOfSaleController extends Controller {
             cashBook:   $pos->cash_book_id,
             stamping:   $pos->stamping_id,
             prepend:    $pos->prepend,
+            customer:   $pos->customer_id,
         );
 
         // redirect to POS.create

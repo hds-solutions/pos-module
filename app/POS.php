@@ -4,6 +4,7 @@ namespace HDSSolutions\Laravel;
 
 use HDSSolutions\Laravel\Models\Branch;
 use HDSSolutions\Laravel\Models\Currency;
+use HDSSolutions\Laravel\Models\Customer;
 use HDSSolutions\Laravel\Models\Warehouse;
 use HDSSolutions\Laravel\Models\CashBook;
 use HDSSolutions\Laravel\Models\Stamping;
@@ -16,6 +17,7 @@ class POS {
     private ?CashBook $cashBook;
     private ?Stamping $stamping;
     private ?string $prepend;
+    private ?Customer $customer;
 
     public function configure(
         int|Currency $currency,
@@ -23,7 +25,8 @@ class POS {
         int|Warehouse $warehouse,
         int|CashBook $cashBook,
         int|Stamping $stamping,
-        string $prepend
+        string $prepend,
+        int|Customer $customer
     ) {
         // save currency
         $this->currency = backend()->currencies()->firstWhere('id', $currency instanceof Currency ? $currency->id : $currency);
@@ -43,6 +46,9 @@ class POS {
         // save prepend
         $this->prepend = $prepend;
         session([ 'pos.prepend' => $this->prepend ]);
+        // save customer
+        $this->customer = $customer instanceof Customer ? $customer : Customer::findOrFail($customer);
+        session([ 'pos.customer' => $this->customer->getKey() ]);
     }
 
     public function currency():?Currency {
@@ -75,6 +81,11 @@ class POS {
         return $this->prepend ??= session('pos.prepend');
     }
 
+    public function customer():?Customer {
+        // return configured model
+        return $this->customer ??= $this->loadCustomer();
+    }
+
     private function loadCurrency():?Currency  {
         // load configured model from session
         return $this->currency = backend()->currencies()->firstWhere('id', session('pos.currency') );
@@ -98,6 +109,11 @@ class POS {
     private function loadStamping():?Stamping {
         // load configured model from session
         return $this->stamping = Stamping::firstWhere('id', session('pos.stamping') );
+    }
+
+    private function loadCustomer():?Customer {
+        // load configured model from session
+        return $this->customer = Customer::firstWhere('customers.id', session('pos.customer') );
     }
 
 }

@@ -62,6 +62,16 @@
     placeholder="pos::pos.cash_book_id._"
     {{-- helper="pos::pos.cash_book_id.?" --}} />
 
+<x-backend-form-foreign :resource="$resource ?? null" name="customer_id" required
+    :values="$customers"
+
+    foreign="customers" foreign-add-label="customers::customers.add"
+    data-live-search="true" show="full_name"
+
+    label="pos::pos.customer_id.0"
+    placeholder="pos::pos.customer_id._"
+    {{-- helper="pos::pos.customer_id.?" --}} />
+
 <x-backend-form-multiple name="employees"
     :values="$employees" :selecteds="isset($resource) ? $resource->employees : []"
     contents-view="pos::pos.form.employee" data-type="pos"

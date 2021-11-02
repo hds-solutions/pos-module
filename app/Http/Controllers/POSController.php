@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use HDSSolutions\Laravel\DataTables\POSDataTable as DataTable;
 use HDSSolutions\Laravel\Http\Request;
 use HDSSolutions\Laravel\Models\POS as Resource;
+use HDSSolutions\Laravel\Models\Customer;
 use HDSSolutions\Laravel\Models\Employee;
 use HDSSolutions\Laravel\Models\Stamping;
 
@@ -26,17 +27,25 @@ class POSController extends Controller {
         if ($request->ajax()) return $dataTable->ajax();
 
         // return view with dataTable
-        return $dataTable->render('pos::pos.index', [ 'count' => Resource::count() ]);
+        return $dataTable->render('pos::pos.index', [
+            'count'                 => Resource::count(),
+            'show_company_selector' => !backend()->companyScoped(),
+        ]);
     }
 
     public function create(Request $request) {
+        // force company selection
+        if (!backend()->companyScoped()) return view('backend::layouts.master', [ 'force_company_selector' => true ]);
+
         // load stampings
         $stampings = Stamping::all();
+        // load customers
+        $customers = Customer::all();
         // load employees
         $employees = Employee::all();
 
         // show create form
-        return view('pos::pos.create', compact('stampings', 'employees'));
+        return view('pos::pos.create', compact('stampings', 'customers', 'employees'));
     }
 
     public function store(Request $request) {
@@ -73,13 +82,16 @@ class POSController extends Controller {
     public function edit(Request $request, Resource $resource) {
         // load stampings
         $stampings = Stamping::all();
+        // load customers
+        $customers = Customer::all();
         // load employees
         $employees = Employee::all();
 
         // show edit form
         return view('pos::pos.edit', compact('resource',
             'stampings',
-            'employees'
+            'customers',
+            'employees',
         ));
     }
 
