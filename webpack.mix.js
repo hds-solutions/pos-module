@@ -9,6 +9,8 @@ const mix = require('laravel-mix');
 
 // Allow multiple Laravel Mix applications
 require('laravel-mix-merge-manifest');
+// // Load replace plugin
+// require('laravel-mix-string-replace');
 
 // set public path
 mix.setPublicPath(public = '../../../public').mergeManifest();
@@ -32,7 +34,7 @@ mix.options({
 // Autoload libraries aliases
 mix.autoload({
     // autoload jQuery
-    'jquery': [ '$', 'jQuery', 'window.$', 'window.jQuery' ],
+    // 'jquery': [ '$', 'jQuery', 'window.$', 'window.jQuery' ],
 });
 
 // disable notifications in prod

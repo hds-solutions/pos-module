@@ -7,13 +7,13 @@ export default class OrderLine extends DocumentLine {
     #finder;
     #loading = false;
 
-    constructor(document, container) {
+    constructor(document, container, focus = false) {
         super(document, container);
         this.#thousands = this.container.querySelectorAll('[name^="lines"][thousand]');
         this.#fields.push(...this.container.querySelectorAll('select'));
         this.#fields.push(...this.container.querySelectorAll('[name="lines[price][]"],[name="lines[quantity][]"]'));
         this.#finder = this.container.querySelector('[name="product-finder"]');
-        this._init();
+        this._init(focus);
     }
 
     destructor() {
@@ -21,7 +21,7 @@ export default class OrderLine extends DocumentLine {
         this.#updateTotal(null);
     }
 
-    _init() {
+    _init(focus) {
         // capture change on fields
         this.#fields.forEach(field => field.addEventListener('change', e => {
             // ignore if field doesn't have form (deleted line)
@@ -46,56 +46,93 @@ export default class OrderLine extends DocumentLine {
             // disable default event
             else e.preventDefault();
 
+            // ignore empty
+            if (this.#finder.value.length === 0) return false;
+
             // parse quantity
-            let match, qty = (match = this.#finder.value.match(/^(\d*\.?\d*)\*/)) ? (match[1] ?? 1) : 1;
+            let match, qty = (match = this.#finder.value.match(/^(\d*\.?\d*)\*/)) ? (match[1] ?? 1) : 1,
+                current = this.container.querySelector('[name="lines[quantity][]"]');
             // remove quantity from code
-            if (qty !== null) {
+            if (qty !== null && current.value.length === 0) {
                 // remove qty from code
                 this.#finder.value = this.#finder.value.replace(qty+'*', '');
                 // set qty on field
-                this.container.querySelector('[name="lines[quantity][]"]').value = qty;
+                current.value = qty;
             }
 
             // disable field while working
             this.#finder.setAttribute('disabled', true);
 
+            // set focus on next line
+            this.document.lines.last().container.querySelector('[name="'+this.#finder.name+'"]').focus();
+
             // find product
-            $.ajax({
+            Application.$.ajax({
                 method: 'POST',
                 url: '/sales/product',
                 data: {
-                    _token: this.document.token,
                     product: this.#finder.value,
                 },
                 success: data => {
                     // active flag to prevent multiple ajax requests
                     this.#loading = true;
 
-                    // select product
-                    Application.$(this.container.querySelector('[name="lines[product_id][]"]'))
-                        .selectpicker('val', data.variant !== null ? data.variant.product_id : (data.product !== null ? data.product.id : null));
-                    // fire change to enable variants selector
-                    this.fire('change', this.container.querySelector('[name="lines[product_id][]"]'));
+                    // show last selected product
+                    this.document.show(data);
 
-                    // select variant
-                    Application.$(this.container.querySelector('[name="lines[variant_id][]"]'))
-                        .selectpicker('val', data.variant !== null ? data.variant.id : null);
-                    // disable flag, next change event fires ajax requests
-                    this.#loading = false;
-                    // fire change to update price
-                    this.fire('change', this.container.querySelector('[name="lines[variant_id][]"]'));
+                    // check if product exists or don't have price
+                    if (data.product === null || data.price === null) {
+                        // disable flag
+                        this.#loading = false;
+                        // re-enable field
+                        this.#finder.removeAttribute('disabled');
+                        // select all text
+                        return this.#finder.select();
+                    }
 
-                    // re-enable field
-                    this.#finder.removeAttribute('disabled');
-
-                    // check if a product/variant was found
-                    if (data.variant === null && data.product === null) return this.#finder.select();
-
-                    // set focus on next line
-                    this.document.lines.last().container.querySelector('[name="'+this.#finder.name+'"]').focus();
+                    // set product on line
+                    this.setProduct(data);
                 },
             });
         });
+
+        if (focus) this.focus();
+    }
+
+    setProduct(data) {
+        // set product and variant
+        this.container.querySelector('[name="lines[product_id][]"]').value = data.product.id;
+        this.container.querySelector('[name="lines[variant_id][]"]').value = data.variant.id ?? null;
+
+        // set product / variant values
+        this.container.querySelector('#sku').textContent = data.variant.sku ?? data.product.code;
+        this.container.querySelector('#product').textContent = data.product.name;//+' '+(data.variant.values ?? '');
+        this.container.querySelector('#preview').src = data.image ?? null;
+
+        // set price
+        this.container.querySelector('[name="lines[price][]"]').value = data.price ?? null;
+
+        // get line quantity
+        let quantity = this.container.querySelector('[name="lines[quantity][]"]');
+        // parse or set to 1 as default
+        quantity.value = !data.price || quantity.value.length > 0 ? quantity.value : 1;
+        // execute change event on quantity field
+        OrderLine.fire('change', quantity);
+
+        // disable flag
+        this.#loading = false;
+
+        // remove product finder
+        this.#finder.remove();
+
+        // add new line
+        this.document.multiple.new();
+        this.document.lines[this.document.lines.length - 1].focus();
+    }
+
+    focus() {
+        this.#finder.focus();
+        this.#finder.select();
     }
 
     #loadProduct(field) {
@@ -111,7 +148,7 @@ export default class OrderLine extends DocumentLine {
         // remove product finder
         this.#finder.remove();
         // request current price quantity
-        $.ajax({
+        Application.$.ajax({
             method: 'POST',
             url: '/sales/price',
             data: data,
@@ -124,7 +161,7 @@ export default class OrderLine extends DocumentLine {
                 // parse or set to 1 as default
                 quantity.value = !data.price || quantity.value.length > 0 ? quantity.value : 1;
                 // execute change event on quantity field
-                this.fire('change', quantity);
+                OrderLine.fire('change', quantity);
             },
         });
     }
@@ -140,14 +177,14 @@ export default class OrderLine extends DocumentLine {
             // convert price to integer without decimals
             parseInt(price.value.replace(/[^0-9\.]/g,'') * Math.pow(10, price.dataset.decimals))
             // multiply for quantity
-            * parseFloat(quantity.value)
+            * parseFloat(quantity.value.length ? quantity.value : 0)
         // divide total for currency decimals
         ) / Math.pow(10, price.dataset.decimals);
 
         // fire thousands plugin formatter
-        this.#thousands.forEach(thousand => this.fire('blur', thousand));
+        this.#thousands.forEach(thousand => OrderLine.fire('blur', thousand));
         // fire total change
-        this.fire('change', total);
+        OrderLine.fire('change', total);
     }
 
     #updateTotal(event) {
@@ -165,7 +202,7 @@ export default class OrderLine extends DocumentLine {
         // set total
         this.document.total.value = total > 0 ? total : '';
         // fire format
-        if (total > 0) this.fire('blur', this.document.total);
+        if (total > 0) OrderLine.fire('blur', this.document.total);
     }
 
 }

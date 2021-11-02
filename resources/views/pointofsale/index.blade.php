@@ -1,7 +1,5 @@
 @extends('pos::layouts.master')
 
-@section('page-name', __('pos::pointofsale.title'))
-
 @section('content')
 
     <div class="card mb-3">

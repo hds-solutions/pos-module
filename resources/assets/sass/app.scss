@@ -1,6 +1,11 @@
-.payment-container:not(:first-child) {
-    border-top: 1px solid #e3e6f0;
-}
+@import '../../../../backend-module/resources/assets/sass/theme/variables';
+@import '../../../../backend-module/node_modules/bootstrap/scss/functions';
+@import '../../../../backend-module/node_modules/bootstrap/scss/variables';
+@import '../../../../backend-module/node_modules/bootstrap/scss/mixins';
+
+// .payment-container:not(:first-child) {
+//     border-top: 1px solid #e3e6f0;
+// }
 
 .payment-container:not(:first-child).mt-1 {
     margin-top: 0.75rem !important;
@@ -8,4 +13,82 @@
 
 .payment-container:not(:first-child).pt-1 {
     padding-top: 0.75rem !important;
+}
+
+section.pos-lines {
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    [data-multiple] {
+        .line-container:nth-child(even) {
+            background-color: $light;
+        }
+    }
+}
+
+.nav {
+    position: relative;
+
+    .connecting-line {
+        position: absolute;
+        width: calc(100% / 3);
+        top: calc(50% - 1px);
+        left: calc(100% / 6);
+        z-index: 10;
+
+        &.offset {
+            left: calc(100% / 6) + calc(100% / 3);
+        }
+    }
+
+    .nav-item {
+        z-index: 50;
+
+        &.active,
+        &.completed {
+            .border {
+                border-color: $success !important;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    border: 14px solid transparent;
+                    bottom: -17px;
+                    border-top-color: $success;
+                    margin: 0 auto;
+                }
+
+                .fas {
+                    color: $success !important;
+                }
+            }
+        }
+
+        &.completed {
+            .border::after {
+                display: none;
+            }
+        }
+    }
+}
+
+@include media-breakpoint-down(lg) {
+    .nav {
+        .nav-item {
+            .border {
+                width: 40px !important;
+                height: 40px !important;
+                border-width: 2px !important;
+
+                &::after {
+                    border-width: 8px !important;
+                    bottom: -10px !important;
+                }
+
+                .fas {
+                    font-size: 1rem !important;
+                }
+            }
+        }
+    }
 }

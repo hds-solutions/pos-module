@@ -4,10 +4,22 @@ import Payment from '../models/Payment';
 export default class PaymentLine extends DocumentLine {
 
     #fields = new Map;
+    #paymentType;
+    #paymentAmount;
+    #btnDelete;
 
-    constructor(document, container) {
+    #used = false;
+    #type;
+    #amount = 0;
+
+    constructor(document, container, focus = false) {
         super(document, container);
-        this._init();
+        // get payment type selector
+        this.#paymentType = this.container.querySelector('[name="payments[payment_type][]"]'),
+        this.#type = this.#paymentType.value;
+        this.#paymentAmount = this.container.querySelector('[name="payments[payment_amount][]"]'),
+        this.#btnDelete = this.container.querySelector('[data-action="delete"]');
+        this._init(focus);
     }
 
     destructor() {
@@ -15,12 +27,14 @@ export default class PaymentLine extends DocumentLine {
         this.#updateTotal(null);
     }
 
-    _init() {
-        // get payment type selector
-        let paymentType = this.container.querySelector('[name="payments[payment_type][]"]'),
-            paymentAmount = this.container.querySelector('[name="payments[payment_amount][]"]'),
-            // Credit payment type fields
-            interest = this.container.querySelector('[name="payments[interest][]"]'),
+    get type() { return this.#type; }
+    get amount() { return this.#amount; }
+
+    _init(focus) {
+        // hide delete btn by default
+        this.#btnDelete.classList.add('d-none');
+        // Credit payment type fields
+        let interest = this.container.querySelector('[name="payments[interest][]"]'),
             dues = this.container.querySelector('[name="payments[dues][]"]'),
             // Check payment type fields
             bank_id = this.container.querySelector('[name="payments[bank_id][]"]'),
@@ -42,25 +56,30 @@ export default class PaymentLine extends DocumentLine {
             [ Payment.PAYMENT_TYPE_Card,        [ card_holder, card_number, is_credit ] ],
         ]);
         // capture payment type change
-        paymentType.addEventListener('change', e => {
+        this.#paymentType.addEventListener('change', e => {
             // set PaymentType and Amount fields as mandatory
-            paymentType.setAttribute('required', true);
-            paymentAmount.setAttribute('required', true);
+            this.#paymentType.setAttribute('required', true);
+            this.#paymentAmount.setAttribute('required', true);
             // reset fields state
             this.#fields.forEach(group => group.forEach(field => field.removeAttribute('required')));
-            if (paymentType.value) {
+            if (this.#paymentType.value) {
+                // save payment type
+                this.#type = this.#paymentType.value;
                 // enable selected paymentType fields only
-                this.#fields.get(paymentType.value).forEach(field => field.setAttribute('required', true));
+                this.#fields.get(this.#paymentType.value).forEach(field => field.setAttribute('required', true));
             } else {
                 // remove PaymentType and Amount fields required
-                paymentType.removeAttribute('required');
-                paymentAmount.removeAttribute('required');
+                this.#paymentType.removeAttribute('required');
+                this.#paymentAmount.removeAttribute('required');
             }
         });
         // capture total change
-        paymentAmount.addEventListener('change', e => {
+        this.#paymentAmount.addEventListener('change', e => {
             // ignore if field doesn't have form (deleted line)
-            if (paymentAmount.form === null) return;
+            if (this.#paymentAmount.form === null) return;
+
+            // save payment amount
+            this.#amount = parseFloat(this.#paymentAmount.value.replace(/\,*/g, ''));
 
             // update total
             this.#updateTotal(e);
@@ -68,6 +87,35 @@ export default class PaymentLine extends DocumentLine {
             // redirect event to listener
             this.updated(e);
         });
+
+        // capture amount event
+        this.#paymentAmount.addEventListener('keydown', e => {
+            // ignore if key isn't <enter>
+            if (e.keyCode !== 13) return false;
+            // disable default event
+            else e.preventDefault();
+
+            // ignore empty
+            if (this.#paymentAmount.value.length === 0) return false;
+
+            // add new line
+            if (!this.#used) this.#used = this.document.multiple.new() || true;
+            // set focus on last line
+            this.document.lines[this.document.lines.length - 1].focus( false );
+
+            // show delete btn
+            this.#btnDelete.classList.remove('d-none');
+        });
+
+        if (focus) this.focus();
+    }
+
+    focus(onAmount = true) {
+        if (onAmount) {
+            this.#paymentAmount.focus();
+            this.#paymentAmount.select();
+        } else
+            this.#paymentType.focus();
     }
 
     #updateTotal(event) {
@@ -86,10 +134,10 @@ export default class PaymentLine extends DocumentLine {
             total += lineTotal;
         });
 
-        // set totals
-        this.document.total.value = total > 0 ? total : '';
+        // set payment totals
+        this.document.payments.value = total > 0 ? total : 0;
         // fire format
-        if (total > 0) this.fire('blur', this.document.total);
+        if (total > 0) PaymentLine.fire('blur', this.document.payments);
     }
 
 }

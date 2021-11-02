@@ -34,15 +34,15 @@
 
                         <hr class="connecting-line m-0 border-2 border-success">
 
-                        <span class="nav-item nav-link py-1 py-xl-2 d-flex justify-content-center active">
+                        <span class="nav-item nav-link py-1 py-xl-2 d-flex justify-content-center completed">
                             <div class="w-75px h-75px rounded-circle border border-3 border-gray-400 d-flex justify-content-center align-items-center bg-white">
                                 <i class="fas fa-2x fa-money-bill-wave text-gray-500"></i>
                             </div>
                         </span>
 
-                        <hr class="connecting-line m-0 border-2 offset border-gray-400">
+                        <hr class="connecting-line m-0 border-2 offset border-success">
 
-                        <span class="nav-item nav-link py-1 py-xl-2 d-flex justify-content-center">
+                        <span class="nav-item nav-link py-1 py-xl-2 d-flex justify-content-center active">
                             <div class="w-75px h-75px rounded-circle border border-3 border-gray-400 d-flex justify-content-center align-items-center bg-white">
                                 <i class="fas fa-2x fa-receipt text-gray-500"></i>
                             </div>
@@ -57,7 +57,7 @@
                         @include('pos::pointofsale.show.form.lines')
                     </div>
                     <div class="col-12 col-lg">
-                        @include('pos::pointofsale.show.form.payments')
+                        @include('pos::pointofsale.print.form.payments')
                     </div>
                 </div>
             </div>
@@ -103,16 +103,16 @@
                 </div>
             </div>
             <div class="card-footer border border-top-0 d-flex justify-content-around">
-                <button class="btn btn-lg btn-primary" data-key="F3"><i class="fas fa-user-edit mr-2"></i>Cliente <small>[F3]</small></button>
+                <button class="btn btn-lg btn-gray" disabled data-key="F3"><i class="fas fa-user-edit mr-2"></i>Cliente <small>[F3]</small></button>
                 <button class="btn btn-lg btn-gray" disabled data-key="F6"><i class="fas fa-search mr-2"></i>Buscar producto <small>[F6]</small></button>
-                <button class="btn btn-lg btn-success" data-key="F9" type="submit"><i class="fas fa-hand-holding-usd mr-2"></i>Pagar <small>[F9]</small></button>
-                <a href="{{ route('backend.pointofsale.create') }}"
-                    data-confirm="Cancelar venta"
+                <button class="btn btn-lg btn-gray" disabled data-key="F9"><i class="fas fa-hand-holding-usd mr-2"></i>Pagar <small>[F9]</small></button>
+                <a href="{{ route('backend.pointofsale.create') }}" data-key="F12"
+                    {{-- data-confirm="Cancelar venta"
                     data-text="Esta seguro de cancelar la venta actual?" data-text-type="danger"
                     data-modal-type="danger"
                     data-accept="Si, cancelar venta" data-cancel="Continuar"
-                    data-accept-class="btn-outline-danger" data-cancel-class="btn-success"
-                    class="btn btn-lg btn-danger"><i class="fas fa-ban mr-2"></i>Cancelar Venta</a>
+                    data-accept-class="btn-outline-danger" data-cancel-class="btn-success" --}}
+                    class="btn btn-lg btn-success"><i class="fas fa-check mr-2"></i>Finalizar Venta <small>[F12]</small></a>
             </div>
         </div>
 

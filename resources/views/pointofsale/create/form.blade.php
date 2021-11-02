@@ -1,78 +1,87 @@
 @include('backend::components.errors')
 
-<x-form-foreign name="currency_id" required
-    :values="backend()->currencies()" default="{{ pos_settings()->currency()->id }}"
+<input type="hidden" name="currency_id" value="{{ pos_settings()->currency()->id }}">
 
-    append="decimals" show="code"
-    class="d-none" />
+<div class="row">
+    <div class="col-12 col-md-8 d-flex align-items-center min-h-100px">
+        <div class="row w-100">
+            <div class="col-12 col-xl-6">
+                @include('pos::pointofsale.create.form.client')
+            </div>
+            <div class="col-12 col-xl-6">
+                @include('pos::pointofsale.create.form.invoice')
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        @include('pos::pointofsale.create.form.product')
+    </div>
+</div>
 
-<x-backend-form-options :resource="null" name="payment_rule" required
-    :values="\HDSSolutions\Laravel\Models\Invoice::PAYMENT_RULES"
-    default="{{ Invoice::PAYMENT_RULE_Cash }}"
+<div class="row flex-grow-1">
+    <div class="col">
 
-    label="pos::pointofsale.payment_rule.0"
-    placeholder="pos::pointofsale.payment_rule._"
-    {{-- helper="pos::pointofsale.payment_rule.?" --}} />
+        <div class="card h-100 text-center bg-transparent border-0">
+            <div class="card-header py-1 bg-transparent border-0">
 
-<x-backend-form-text name="document_number" required
-    :default="$highs['document_number'] ?? null"
-    :prepend="pos_settings()->prepend()"
+                <nav class="nav nav-justified position-relative">
+                    <div class="d-flex w-100">
+                        <span class="nav-item nav-link py-1 py-xl-2 d-flex justify-content-center active">
+                            <div class="w-75px h-75px rounded-circle border border-3 border-gray-400 d-flex justify-content-center align-items-center bg-white">
+                                <i class="fas fa-2x fa-cash-register text-gray-500"></i>
+                            </div>
+                        </span>
 
-    label="pos::pointofsale.document_number.0"
-    placeholder="pos::pointofsale.document_number._"
-    {{-- helper="pos::pointofsale.document_number.?" --}} />
+                        <hr class="connecting-line m-0 border-2 border-gray-400">
 
-{{-- TODO ADDRESSES--}}
-{{-- <x-backend-form-foreign :resource="$resource ?? null" name="warehouse_id" required
-    foreign="warehouses" :values="$branches->pluck('warehouses')->flatten()"
-    filtered-by="[name=address_id]" filtered-using="branch"
+                        <span class="nav-item nav-link py-1 py-xl-2 d-flex justify-content-center">
+                            <div class="w-75px h-75px rounded-circle border border-3 border-gray-400 d-flex justify-content-center align-items-center bg-white">
+                                <i class="fas fa-2x fa-money-bill-wave text-gray-500"></i>
+                            </div>
+                        </span>
 
-    foreign-add-label="pos::warehouses.add"
+                        <hr class="connecting-line m-0 border-2 offset border-gray-400">
 
-    label="pos::pointofsale.warehouse_id.0"
-    placeholder="pos::pointofsale.warehouse_id._"
-    helper="pos::pointofsale.warehouse_id.?" /> --}}
+                        <span class="nav-item nav-link py-1 py-xl-2 d-flex justify-content-center">
+                            <div class="w-75px h-75px rounded-circle border border-3 border-gray-400 d-flex justify-content-center align-items-center bg-white">
+                                <i class="fas fa-2x fa-receipt text-gray-500"></i>
+                            </div>
+                        </span>
+                    </div>
+                </nav>
 
-<x-backend-form-foreign name="customer_id" required
-    foreign="customers" :values="$customers"
-
-    foreign-add-label="customers::customers.add"
-    show="business_name"
-
-    label="pos::pointofsale.customer_id.0"
-    placeholder="pos::pointofsale.customer_id._"
-    {{-- helper="pos::pointofsale.customer_id.?" --}} />
-
-<x-backend-form-multiple name="lines" values-as="products"
-    :values="$products" :selecteds="[]" grouped old-filter-fields="product_id,quantity"
-    contents-size="xxl" contents-view="pos::pointofsale.create.line" class="my-2" data-type="pointofsale"
-    card="bg-light"
-
-    label="pos::pointofsale.lines.0">
-
-    <x-slot name="card-footer">
-        <div class="row">
-            <div class="col-9 col-xl-10 offset-1">
+            </div>
+            <div class="card-body d-flex flex-column bg-white rounded-top border border-bottom-0 p-0 overflow-hidden">
+                @include('pos::pointofsale.create.form.lines')
+            </div>
+            <div class="card-footer border">
                 <div class="row">
-                    <div class="col-3 offset-9">
+                    <div class="offset-2 offset-md-6 offset-lg-8 offset-xl-9 col-10 col-md-6 col-lg-4 col-xl-3">
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text font-weight-bold px-3">Total:</span>
+                                <span class="input-group-text font-weight-bold px-3">TOTAL</span>
                             </div>
                             <input name="total" type="number" min="0" thousand readonly
-                                value="{{ old('total') }}" tabindex="-1"
-                                data-currency-by="[name=currency_id]" data-keep-id="true" data-decimals="0"
-                                class="form-control form-control-lg text-right font-weight-bold"
+                                value="{{ old('total') }}" tabindex="-1" data-decimals="{{ pos_settings()->currency()->decimals }}"
+                                class="form-control form-control-lg text-right font-weight-bold text-primary"
                                 placeholder="@lang('sales::order.lines.total.0')">
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="card-footer border border-top-0 d-flex justify-content-around">
+                <button class="btn btn-lg btn-primary" data-key="F3"><i class="fas fa-user-edit mr-2"></i>Cliente <small>[F3]</small></button>
+                <button class="btn btn-lg btn-warning" data-key="F6"><i class="fas fa-search mr-2"></i>Buscar producto <small>[F6]</small></button>
+                <button class="btn btn-lg btn-success" data-key="F9" type="submit"><i class="fas fa-hand-holding-usd mr-2"></i>Pagar <small>[F9]</small></button>
+                <a href="{{ route('backend.pointofsale.create') }}"
+                    data-confirm="Cancelar venta"
+                    data-text="Esta seguro de cancelar la venta actual?" data-text-type="danger"
+                    data-modal-type="danger"
+                    data-accept="Si, cancelar venta" data-cancel="Continuar"
+                    data-accept-class="btn-outline-danger" data-cancel-class="btn-success"
+                    class="btn btn-lg btn-danger"><i class="fas fa-ban mr-2"></i>Cancelar Venta</a>
+            </div>
         </div>
-    </x-slot>
 
-</x-backend-form-multiple>
-
-<x-backend-form-controls
-    submit="pos::pointofsale.save"
-    cancel="pos::pointofsale.cancel" cancel-route="backend.pointofsale" />
+    </div>
+</div>

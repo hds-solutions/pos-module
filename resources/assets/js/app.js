@@ -6,3 +6,8 @@ Application.register('pointofsale', PointOfSale);
 Application.register('payment', Payment);
 
 PointOfSale.printable();
+
+Application.init(_ => {
+    // init PointOfSale instance
+    if (document.querySelector('#pos-container')) Application.instance('pointofsale');
+});

@@ -93,28 +93,30 @@ class PointOfSaleController extends Controller {
     }
 
     public function create(Request $request) {
-        // load cash_books
-        $customers = Customer::with([
-            // 'addresses',
-        ])->get();
-        // load products
-        $products = Product::with([
-            'images',
-            'prices',
-            'variants.prices',
-        ])->get();
+        // load customer
+        $customer = old('customer_id') ? Customer::find( old('customer_id') ) : pos_settings()->customer();
 
-        $highs = [
-            'document_number'   => str_replace(pos_settings()->prepend(), '', pos_settings()->stamping()->next_document_number),
-        ];
+        // $highs = [
+        //     'document_number'   => pos_settings()->stamping()
+        //         ->getNextDocumentNumber( pos_settings()->prepend(), false ),
+        // ];
 
         // show main form
-        return view('pos::pointofsale.create', compact('customers', 'products', 'highs'));
+        return view('pos::pointofsale.create', compact('customer'));
     }
 
     public function store(Request $request) {
         // start a transaction
         DB::beginTransaction();
+
+        // check if document has no lines
+        if (collect( array_group($request->lines) )
+            // at least product and quantity must have value
+            ->filter(fn($line) => isset($line['product_id']) && !is_null($line['quantity']) )
+            ->isEmpty())
+            // reject with error
+            return back()->withInput()
+                ->withErrors([ 'No lines' ]);
 
         // POS always creates a Sales document
         $request->merge([ 'is_purchase' => false ]);
@@ -148,9 +150,10 @@ class PointOfSaleController extends Controller {
 
         // create inovice from order
         $invoice = Invoice::createFromOrder($order, [
-            'stamping_id'       => pos_settings()->stamping()->getKey(),
-            'document_number'   => pos_settings()->prepend().$request->input('document_number'),
-            'is_credit'         => $request->input('payment_rule') == Invoice::PAYMENT_RULE_Credit,
+            'stamping_id'       => ($stamping = pos_settings()->stamping())->getKey(),
+            'document_number'   => $stamping->getNextDocumentNumber( pos_settings()->prepend() ),
+            // POS always sell as cash
+            'is_credit'         => false,
         ]);
         // check if invoice was created
         if (!$invoice->exists || count($invoice->errors()))
@@ -218,6 +221,24 @@ class PointOfSaleController extends Controller {
     public function pay(Request $request, Invoice $resource) {
         // start a transaction
         DB::beginTransaction();
+
+        // update partnerable
+        if ($request->customer_id !== $resource->partnerable->id) {
+            // update partnerable on invoice
+            $resource->partnerable()->associate( Customer::find($request->get('customer_id')) );
+            if (!$resource->save())
+                return back()->withInput()
+                    ->withErrors( $resource->errors() );
+
+            // update partnerable on order(s)
+            foreach ($resource->orders as $order) {
+                // update partnerable on order
+                $order->partnerable()->associate( $resource->partnerable );
+                if (!$order->save())
+                    return back()->withInput()
+                        ->withErrors( $order->errors() );
+            }
+        }
 
         // create receipment
         $receipment = new Receipment([
@@ -355,13 +376,26 @@ class PointOfSaleController extends Controller {
     }
 
     public function print(Request $request, Invoice $resource) {
+        // load resource relations
+        $resource->load([
+            'receipments'   => fn($receipment) => $receipment->with([
+                // 'invoices',
+                'cashLines',
+                'credits',
+                'checks',
+                'creditNotes',
+                'promissoryNotes',
+                'cards',
+            ]),
+        ]);
+
         // show invoice with payment methods and print it
         return view('pos::pointofsale.print', compact('resource'));
     }
 
     private function syncLines(Order $order, array $lines) {
         // load order lines
-        $order->load(['lines']);
+        $order->load([ 'lines' ]);
 
         // foreach new/updated lines
         foreach (($lines = array_group($lines)) as $line) {
