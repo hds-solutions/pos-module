@@ -23,6 +23,7 @@ class CreatePosTable extends Migration {
             $table->foreignTo('Warehouse');
             $table->foreignTo('CashBook');
             $table->foreignTo('Stamping');
+            $table->foreignTo('Customer');
             $table->string('prepend')->nullable();
         });
 
