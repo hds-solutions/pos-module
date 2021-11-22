@@ -17,6 +17,11 @@
         @include('pos::pointofsale.show.form')
     </form>
 
+    <form method="POST" action="{{ route('backend.pointofsale.destroy', $resource) }}" id="pos-delete">
+        @csrf
+        @method('DELETE')
+    </form>
+
     @include('pos::pointofsale.modals')
 
 @endsection

@@ -51,7 +51,7 @@
                 </nav>
 
             </div>
-            <div class="card-body d-flex flex-column bg-white rounded-top border border-bottom-0 p-0 overflow-hidden">
+            <div class="card-body d-flex flex-column bg-white rounded-top border border-bottom-0 p-0">
                 <div class="row h-100">
                     <div class="col-12 col-lg-8 col-xl-9 d-flex flex-column h-100">
                         @include('pos::pointofsale.show.form.lines')
@@ -106,13 +106,13 @@
                 <button class="btn btn-lg btn-primary" data-key="F3"><i class="fas fa-user-edit mr-2"></i>Cliente <small>[F3]</small></button>
                 <button class="btn btn-lg btn-gray" disabled data-key="F6"><i class="fas fa-search mr-2"></i>Buscar producto <small>[F6]</small></button>
                 <button class="btn btn-lg btn-success" data-key="F9" type="submit"><i class="fas fa-hand-holding-usd mr-2"></i>Pagar <small>[F9]</small></button>
-                <a href="{{ route('backend.pointofsale.create') }}"
+                <button type="submit" form="pos-delete"
                     data-confirm="Cancelar venta"
                     data-text="Esta seguro de cancelar la venta actual?" data-text-type="danger"
                     data-modal-type="danger"
                     data-accept="Si, cancelar venta" data-cancel="Continuar"
                     data-accept-class="btn-outline-danger" data-cancel-class="btn-success"
-                    class="btn btn-lg btn-danger"><i class="fas fa-ban mr-2"></i>Cancelar Venta</a>
+                    class="btn btn-lg btn-danger"><i class="fas fa-ban mr-2"></i>Cancelar Venta</button>
             </div>
         </div>
 

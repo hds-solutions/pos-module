@@ -15,6 +15,10 @@
     </div>
     <div class="col">
         {{-- @include('pos::pointofsale.create.form.product') --}}
+        <button class="btn btn-outline-info d-none"
+            data-printable="{{ route('backend.invoices.print', $resource) }}" data-print="true">
+            <i class="fas fa-print"></i>
+        </button>
     </div>
 </div>
 
@@ -51,7 +55,7 @@
                 </nav>
 
             </div>
-            <div class="card-body d-flex flex-column bg-white rounded-top border border-bottom-0 p-0 overflow-hidden">
+            <div class="card-body d-flex flex-column bg-white rounded-top border border-bottom-0 p-0">
                 <div class="row h-100">
                     <div class="col-12 col-lg-8 col-xl-9 d-flex flex-column h-100">
                         @include('pos::pointofsale.show.form.lines')
@@ -82,7 +86,7 @@
                                 <span class="input-group-text font-weight-bold px-3 min-w-100px">PAGOS</span>
                             </div>
                             <input name="payments_amount" type="number" min="0" thousand readonly
-                                value="0" tabindex="-1" data-decimals="{{ $resource->currency->decimals }}"
+                                value="{{ $payments_amount = $resource->receipments->pluck('payments')->flatten()->sum('receipmentPayment.payment_amount') }}" tabindex="-1" data-decimals="{{ $resource->currency->decimals }}"
                                 class="form-control form-control-lg text-right font-weight-bold text-primary"
                                 placeholder="@lang('sales::order.lines.payments.0')">
                         </div>
@@ -95,7 +99,7 @@
                                 <span class="input-group-text font-weight-bold px-3 min-w-100px">VUELTO</span>
                             </div>
                             <input name="return_amount" type="number" min="0" thousand readonly
-                                value="0" tabindex="-1" data-decimals="{{ $resource->currency->decimals }}"
+                                value="{{ $payments_amount - $resource->paid_amount }}" tabindex="-1" data-decimals="{{ $resource->currency->decimals }}"
                                 class="form-control form-control-lg text-right font-weight-bold text-success"
                                 placeholder="@lang('sales::order.lines.return.0')">
                         </div>

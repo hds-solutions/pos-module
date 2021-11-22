@@ -10,7 +10,7 @@ use HDSSolutions\Laravel\Http\Controllers\{
 
 Route::group([
     'prefix'        => config('backend.prefix'),
-    'middleware'    => [ 'web', 'auth:'.config('backend.guard'), 'permission:pos' ],
+    'middleware'    => [ 'web', 'auth:'.config('backend.guard') ],
 ], function() {
     // name prefix
     $name_prefix = [ 'as' => 'backend' ];
@@ -21,7 +21,7 @@ Route::group([
 
     Route::group([
         'prefix'        => 'pointofsale',
-        'middleware'    => [ 'permission:pos' ],
+        'middleware'    => [ 'permission:pointofsale' ],
     ], function() {
 
         Route::get('/',             [ PointOfSaleController::class, 'index' ])
@@ -38,6 +38,8 @@ Route::group([
             ->name('backend.pointofsale.show');
         Route::post('{resource}',   [ PointOfSaleController::class, 'pay' ])
             ->name('backend.pointofsale.pay');
+        Route::delete('{resource}', [ PointOfSaleController::class, 'destroy' ])
+            ->name('backend.pointofsale.destroy');
         Route::get('{resource}/print.pdf',  [ PointOfSaleController::class, 'print' ])
             ->name('backend.pointofsale.print');
 

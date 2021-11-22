@@ -1,5 +1,6 @@
+require('../../../../../backend-module/resources/assets/js/utils/transaction');
+
 import Application from '../../../../../backend-module/resources/assets/js/resources/Application';
-// require('../../../../../backend-module/resources/assets/js/utils/prototypes');
 
 import Alert from '../../../../../backend-module/resources/assets/js/utils/alert';
 import Event from '../../../../../backend-module/resources/assets/js/utils/consoleevent';
@@ -22,6 +23,8 @@ export default class PointOfSale extends Document {
         this.currency = this.form.querySelector('[name="currency_id"]');
             this.currency = this.currency !== null ? this.currency.value : null;
         this.noImage = document.querySelector('[name="assets-path"]').content+'backend-module/assets/images/default.jpg';
+        this.printable = document.querySelector('[data-printable][data-print="true"]');
+        this.transacted_at = this.form.querySelector('#transacted-at');
         this.modals = {
             active: false,
             customer: Application.instance('customers-modal'),
@@ -43,6 +46,14 @@ export default class PointOfSale extends Document {
         this._captureResize();
         // capture modals events
         this._modalEvents();
+        // update datetime
+        this._updateTransactedAt();
+
+        // keep session alive
+        setInterval(_ => Application.$.get('/keep-alive'), 60 * 1000 * 5);
+
+        // check if print button exists
+        if (this.printable) PointOfSale.fire('click', this.printable);
     }
 
     _getContainerInstance(container) {
@@ -51,26 +62,30 @@ export default class PointOfSale extends Document {
                 return new OrderLine(this, container, this.lines.length == 0);
             case container.classList.contains('payment-container'):
                 let line = new PaymentLine(this, container, this.lines.length == 0);
-                line.updated(e => {
-                    // check if amount of payments is greater
-                    let total;
-                    if (parseFloat(this.payments.value.replace(/\,*/g, '')) > (total = parseFloat(this.total.value.replace(/\,*/g, '')))) {
-                        // reset payments amount colors
-                        this.payments.classList.remove('text-white');
-                        this.payments.classList.remove('bg-danger');
-                        this.payments.oClassList.forEach(class_name => this.payments.classList.add(class_name));
-                    }
-
-                    let cash = 0;
-                    this.lines.forEach(payment => payment.type == Payment.PAYMENT_TYPE_Cash ?
-                        cash += payment.amount : null);
-                    // update cash return amount
-                    this.return.value = cash > total ? cash - total : 0;
-                    PointOfSale.fire('blur', this.return);
-                });
+                line
+                    .updated(e => { this.#updateReturnAmount(); })
+                    .removed(e => { this.#updateReturnAmount(); });
                 return line;
         }
         return null;
+    }
+
+    #updateReturnAmount() {
+        // check if amount of payments is greater
+        let total;
+        if (parseFloat(this.payments.value.replace(/\,*/g, '')) > (total = parseFloat(this.total.value.replace(/\,*/g, '')))) {
+            // reset payments amount colors
+            this.payments.classList.remove('text-white');
+            this.payments.classList.remove('bg-danger');
+            this.payments.oClassList.forEach(class_name => this.payments.classList.add(class_name));
+        }
+
+        let cash = 0;
+        this.lines.forEach(payment => payment.type == Payment.PAYMENT_TYPE_Cash ?
+            cash += payment.amount : null);
+        // update cash return amount
+        this.return.value = cash > total ? cash - total : 0;
+        PointOfSale.fire('blur', this.return);
     }
 
     show(data) {
@@ -150,7 +165,7 @@ export default class PointOfSale extends Document {
             // get button
             let button = document.querySelector('[data-key="'+event.key+'"]');
             // execute local action
-            this[ this.actions[event.key] ]( event, button );
+            if (button) this[ this.actions[event.key] ]( event, button );
         });
         // find buttons
         Object.keys(this.actions).forEach((key, action) => {
@@ -161,7 +176,7 @@ export default class PointOfSale extends Document {
             // capture click event
             button.addEventListener('click', event => {
                 // execute local action
-                this[ this.actions[key] ]( event );
+                this[ this.actions[key] ]( event, button );
             });
         });
     }
@@ -222,6 +237,18 @@ export default class PointOfSale extends Document {
                 // set focus on last product line
                 this.lines[this.lines.length - 1].focus();
             });
+    }
+
+    _updateTransactedAt() {
+        if (!this.transacted_at) return;
+        let transacted_at = this.transacted_at.textContent,
+            date = transacted_at.substr(0, transacted_at.length - 6),
+            time;
+        // parse time
+        setInterval(_ => {
+            time = (new Date).toTimeString().substr(0, 5);
+            this.transacted_at.textContent = date+' '+time;
+        }, 1000);
     }
 
     _resize() {

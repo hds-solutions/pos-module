@@ -52,19 +52,20 @@ export default class OrderLine extends DocumentLine {
             // parse quantity
             let match, qty = (match = this.#finder.value.match(/^(\d*\.?\d*)\*/)) ? (match[1] ?? 1) : 1,
                 current = this.container.querySelector('[name="lines[quantity][]"]');
+
             // remove quantity from code
-            if (qty !== null && current.value.length === 0) {
+            if (qty.length) {
                 // remove qty from code
                 this.#finder.value = this.#finder.value.replace(qty+'*', '');
                 // set qty on field
                 current.value = qty;
             }
 
+            // check if empty (only qty was set)
+            if (!this.#finder.value.length) return false;
+
             // disable field while working
             this.#finder.setAttribute('disabled', true);
-
-            // set focus on next line
-            this.document.lines.last().container.querySelector('[name="'+this.#finder.name+'"]').focus();
 
             // find product
             Application.$.ajax({

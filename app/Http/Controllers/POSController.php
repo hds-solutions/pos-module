@@ -38,7 +38,7 @@ class POSController extends Controller {
         if (!backend()->companyScoped()) return view('backend::layouts.master', [ 'force_company_selector' => true ]);
 
         // load stampings
-        $stampings = Stamping::all();
+        $stampings = Stamping::ordered()->isSale()->get();
         // load customers
         $customers = Customer::all();
         // load employees
@@ -81,7 +81,7 @@ class POSController extends Controller {
 
     public function edit(Request $request, Resource $resource) {
         // load stampings
-        $stampings = Stamping::all();
+        $stampings = Stamping::ordered()->isSale()->get();
         // load customers
         $customers = Customer::all();
         // load employees

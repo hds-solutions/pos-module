@@ -51,7 +51,7 @@
                 </nav>
 
             </div>
-            <div class="card-body d-flex flex-column bg-white rounded-top border border-bottom-0 p-0 overflow-hidden">
+            <div class="card-body d-flex flex-column bg-white rounded-top border border-bottom-0 p-0">
                 @include('pos::pointofsale.create.form.lines')
             </div>
             <div class="card-footer border">
@@ -73,7 +73,7 @@
                 <button class="btn btn-lg btn-primary" data-key="F3"><i class="fas fa-user-edit mr-2"></i>Cliente <small>[F3]</small></button>
                 <button class="btn btn-lg btn-warning" data-key="F6"><i class="fas fa-search mr-2"></i>Buscar producto <small>[F6]</small></button>
                 <button class="btn btn-lg btn-success" data-key="F9" type="submit"><i class="fas fa-hand-holding-usd mr-2"></i>Pagar <small>[F9]</small></button>
-                <a href="{{ route('backend.pointofsale.create') }}"
+                <a href="{{ route('backend.pointofsale.create') }}"{{--  data-key="F12" --}}
                     data-confirm="Cancelar venta"
                     data-text="Esta seguro de cancelar la venta actual?" data-text-type="danger"
                     data-modal-type="danger"

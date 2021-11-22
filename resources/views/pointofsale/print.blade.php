@@ -9,7 +9,9 @@
 
 @section('content')
 
-    @include('pos::pointofsale.print.form')
+    <div class="d-flex flex-column h-100">
+        @include('pos::pointofsale.print.form')
+    </div>
 
     @include('pos::pointofsale.modals')
 

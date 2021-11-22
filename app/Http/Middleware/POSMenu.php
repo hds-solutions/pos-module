@@ -31,10 +31,10 @@ class POSMenu extends Base\Menu {
     }
 
     private function pos(&$menu) {
-        if (Route::has('backend.pos') && $this->can('pos'))
+        if (Route::has('backend.pos') && $this->can('pos.crud.index'))
             $menu->add(__('pos::pos.nav'), [
                 'route'     => 'backend.pos',
-                'icon'      => 'pos'
+                'icon'      => 'tools'
             ]);
 
         return $this;
@@ -44,7 +44,7 @@ class POSMenu extends Base\Menu {
         if (Route::has('backend.pointofsale') && $this->can('pointofsale'))
             $menu->add(__('pos::pointofsale.nav'), [
                 'route'     => 'backend.pointofsale',
-                'icon'      => 'pointofsale'
+                'icon'      => 'cash-register'
             ]);
 
         return $this;
@@ -54,7 +54,7 @@ class POSMenu extends Base\Menu {
         if (Route::has('backend.payment') && $this->can('payment'))
             $menu->add(__('pos::payment.nav'), [
                 'route'     => 'backend.payment',
-                'icon'      => 'payment'
+                'icon'      => 'stamp'
             ]);
 
         return $this;

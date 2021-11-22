@@ -94,12 +94,12 @@
             </div>
             <div class="form-row" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Card }}">
                 <div class="col col-xl-6">
-                    <x-form-input name="payments[card_holder][]"
+                    {{-- <x-form-input name="payments[card_holder][]"
                         default="{{ $old['card_holder'] ?? null }}"
-                        placeholder="payments::payment.card_holder._" />
+                        placeholder="payments::payment.card_holder._" /> --}}
                     <x-form-input name="payments[card_number][]"
                         default="{{ $old['card_number'] ?? null }}"
-                        placeholder="payments::payment.card_number._" />
+                        placeholder="payments::payment.document_number._" />
                     <x-form-boolean name="payments[is_credit][]"
                         default="{{ $old['is_credit'] ?? false }}"
                         placeholder="payments::payment.is_credit._"

@@ -20,9 +20,9 @@
     foreign="branches" foreign-add-label="backend::branches.add"
     data-live-search="true"
 
-    label="pos::pos.branch_id.0"
+    label="pos::pos.warehouse_id.0"
     placeholder="pos::pos.branch_id._"
-    {{-- helper="pos::pos.branch_id.?" --}}>
+    helper="pos::pos.warehouse_id.?">
 
     <x-backend-form-foreign :resource="$resource ?? null" name="warehouse_id" required secondary
         :values="backend()->company()->branches->pluck('warehouses')->flatten()"
@@ -50,7 +50,8 @@
 
 <x-backend-form-text :resource="$resource ?? null" name="prepend"
     label="pos::pos.prepend.0"
-    placeholder="pos::pos.prepend.optional" />
+    placeholder="pos::pos.prepend.optional"
+    helper="pos::pos.prepend.?" />
 
 <x-backend-form-foreign :resource="$resource ?? null" name="cash_book_id" required
     :values="backend()->cashBooks()"
@@ -60,7 +61,7 @@
 
     label="pos::pos.cash_book_id.0"
     placeholder="pos::pos.cash_book_id._"
-    {{-- helper="pos::pos.cash_book_id.?" --}} />
+    helper="pos::pos.cash_book_id.?" />
 
 <x-backend-form-foreign :resource="$resource ?? null" name="customer_id" required
     :values="$customers"
@@ -70,12 +71,13 @@
 
     label="pos::pos.customer_id.0"
     placeholder="pos::pos.customer_id._"
-    {{-- helper="pos::pos.customer_id.?" --}} />
+    helper="pos::pos.customer_id.?" />
 
 <x-backend-form-multiple name="employees"
     :values="$employees" :selecteds="isset($resource) ? $resource->employees : []"
     contents-view="pos::pos.form.employee" data-type="pos"
-    label="pos::pos.employees.0" />
+    label="pos::pos.employees.0"
+    helper="pos::pos.employees.?" />
 
 <x-backend-form-controls
     submit="pos::pos.save"

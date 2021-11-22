@@ -10,16 +10,21 @@ class POSPermissionsSeeder extends Base\PermissionsSeeder {
 
     protected function permissions():array {
         return [
-            'pos'       => 'Point of Sale',
-            'payment'   => 'Payments window',
+            $this->resource('pos'),
+            'pointofsale'   => 'pos::pointofsale.permissions.*',
+            'payment'       => 'pos::payment.permissions.*',
         ];
     }
 
     protected function afterRun():void {
         // append permissions to Cashier role
         $this->role('Seller', [
-            'pos',
-            'payment',
+            // Allow creation of new people (through POS modal)
+            'people.crud.create',
+            // Allow customers listing (POS modal)
+            'customers.crud.index',
+            // Allow access to POS window
+            'pointofsale',
         ]);
     }
 

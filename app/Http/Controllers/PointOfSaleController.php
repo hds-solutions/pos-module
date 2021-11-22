@@ -35,35 +35,30 @@ class PointOfSaleController extends Controller {
         // check if POS is configured
         $this->middleware(function(Request $request, Closure $next) {
             // check POS configuration
-            if ( pos_settings()->currency() === null ||
-                 pos_settings()->branch() === null ||
-                 pos_settings()->warehouse() === null ||
-                 pos_settings()->cashBook() === null ||
-                 pos_settings()->stamping() === null ||
-                 pos_settings()->prepend() === null  ||
-                 pos_settings()->customer() === null )
+            if (pos_settings()->employee() === null ||
+                pos_settings()->currency() === null)
                 // redirect to pos index
                 return redirect()->route('backend.pointofsale');
+
             // continue normal execution
             return $next($request);
+
         })->except([ 'index', 'session' ]);
     }
 
     public function index(Request $request) {
+        // force company selection
+        if (!backend()->companyScoped()) return view('backend::layouts.master', [ 'force_company_selector' => true ]);
+
         // get available POS settings for current user
         $pos = auth()->user()->employees->pluck('pos')->flatten();
 
         // check if only one option
         if (count($pos) === 1 && $pos = $pos->first()) {
-            // configure
+            // set PointOfSale configuration
             pos_settings()->configure(
-                currency:   $pos->currency_id,
-                branch:     $pos->branch_id,
-                warehouse:  $pos->warehouse_id,
-                cashBook:   $pos->cash_book_id,
-                stamping:   $pos->stamping_id,
-                prepend:    $pos->prepend,
-                customer:   $pos->customer_id,
+                pos:        $pos,
+                employee:   $pos->employees->firstWhere('user_id', auth()->user()->id),
             );
             // redirect to POS.create
             return redirect()->route('backend.pointofsale.create');
@@ -77,15 +72,10 @@ class PointOfSaleController extends Controller {
         // find pos settings
         $pos = POS::findOrFail($request->pos);
 
-        // configure
+        // set PointOfSale configuration
         pos_settings()->configure(
-            currency:   $pos->currency_id,
-            branch:     $pos->branch_id,
-            warehouse:  $pos->warehouse_id,
-            cashBook:   $pos->cash_book_id,
-            stamping:   $pos->stamping_id,
-            prepend:    $pos->prepend,
-            customer:   $pos->customer_id,
+            pos:        $pos,
+            employee:   $pos->employees->firstWhere('user_id', auth()->user()->id),
         );
 
         // redirect to POS.create
@@ -95,11 +85,6 @@ class PointOfSaleController extends Controller {
     public function create(Request $request) {
         // load customer
         $customer = old('customer_id') ? Customer::find( old('customer_id') ) : pos_settings()->customer();
-
-        // $highs = [
-        //     'document_number'   => pos_settings()->stamping()
-        //         ->getNextDocumentNumber( pos_settings()->prepend(), false ),
-        // ];
 
         // show main form
         return view('pos::pointofsale.create', compact('customer'));
@@ -123,13 +108,12 @@ class PointOfSaleController extends Controller {
         // create resource
         $order = Order::make( $request->input() );
         $order->transacted_at = now();
-        $order->document_number = Order::nextDocumentNumber();
+        $order->document_number = Order::nextDocumentNumber() ?? '000001';
         $order->partnerable()->associate( Customer::find($request->get('customer_id')) );
         $order->branch()->associate( pos_settings()->branch() );
         $order->warehouse()->associate( pos_settings()->warehouse() );
         $order->currency()->associate( pos_settings()->currency() );
-        // TODO: get logged Employee
-        $order->employee()->associate( Employee::inRandomOrder()->first() );
+        $order->employee()->associate( pos_settings()->employee() );
 
         // save resource
         if (!$order->save())
@@ -142,63 +126,33 @@ class PointOfSaleController extends Controller {
             // return redirection
             return $redirect;
 
-        // complete order
-        if (!$order->processIt( Document::ACTION_Complete ))
+        // prepare order document
+        if (!$order->processIt( Document::ACTION_Prepare ))
             // return document error
             return back()->withInput()
                 ->withErrors( $order->getDocumentError() );
-
-        // create inovice from order
-        $invoice = Invoice::createFromOrder($order, [
-            'stamping_id'       => ($stamping = pos_settings()->stamping())->getKey(),
-            'document_number'   => $stamping->getNextDocumentNumber( pos_settings()->prepend() ),
-            // POS always sell as cash
-            'is_credit'         => false,
-        ]);
-        // check if invoice was created
-        if (!$invoice->exists || count($invoice->errors()))
-            // return invoice errors
-            return back()->withInput()
-                ->withErrors( $invoice->errors()->first() );
-
-        // check if lines were created
-        foreach ($invoice->lines as $line)
-            // check if line is created
-            if (!$line->exists)
-                // return invoiceLine errors
-                return back()->withInput()
-                    ->withErrors( $line->errors()->first() );
-
-        // complete invoice
-        if (!$invoice->processIt( Document::ACTION_Complete ))
-            // return document error
-            return back()->withInput()
-                ->withErrors( $invoice->getDocumentError() );
 
         // commit changes to database
         DB::commit();
 
         // go to payment window
-        return redirect()->route('backend.pointofsale.show', $invoice);
+        return redirect()->route('backend.pointofsale.show', $order);
     }
 
-    public function show(Request $request, Invoice $resource) {
-        // check if invoice is already paid
-        if ($resource->is_paid)
+    public function show(Request $request, Order $resource) {
+        // check if order is already invoiced
+        if ($resource->is_invoiced)
             // reject with error
             return redirect()->route('backend.pointofsale.create')
-                ->withErrors(__('pos::pointofsale.invoice.already-paid'));
+                ->withErrors(__('pos::pointofsale.order.already-invoiced'));
 
         // eager load resource data
         $resource->load([
-            // 'currency',
-            'stamping',
             'partnerable' => fn($customer) => $customer->with([
                 // load available CreditNotes of Customer
                 'creditNotes' => fn($creditNote) => $creditNote->available()->with([ 'identity' ]),
             ]),
             'lines' => fn($line) => $line->with([
-                // 'currency',
                 'product.images',
                 'variant' => fn($variant) => $variant->with([
                     'images',
@@ -218,7 +172,7 @@ class PointOfSaleController extends Controller {
         ));
     }
 
-    public function pay(Request $request, Invoice $resource) {
+    public function pay(Request $request, Order $resource) {
         // start a transaction
         DB::beginTransaction();
 
@@ -229,25 +183,49 @@ class PointOfSaleController extends Controller {
             if (!$resource->save())
                 return back()->withInput()
                     ->withErrors( $resource->errors() );
-
-            // update partnerable on order(s)
-            foreach ($resource->orders as $order) {
-                // update partnerable on order
-                $order->partnerable()->associate( $resource->partnerable );
-                if (!$order->save())
-                    return back()->withInput()
-                        ->withErrors( $order->errors() );
-            }
         }
+
+        // complete order document
+        if (!$resource->processIt( Document::ACTION_Complete ))
+            // return document error
+            return back()->withInput()
+                ->withErrors( $resource->getDocumentError() );
+
+        // create inovice from order
+        $invoice = Invoice::createFromOrder($resource, [
+            'stamping_id'       => ($stamping = pos_settings()->stamping())->getKey(),
+            'document_number'   => $stamping->getNextDocumentNumber( pos_settings()->prepend() ),
+            // POS always sell as cash
+            'is_credit'         => false,
+        ]);
+        // check if invoice was created
+        if (!$invoice->exists || count($invoice->errors()))
+            // return invoice errors
+            return back()->withInput()
+                ->withErrors( $invoice->errors()->first() );
+
+        // check if lines were created
+        foreach ($invoice->lines as $line)
+            // check if line is created
+            if (!$line->exists)
+                // return invoiceLine errors
+                return back()->withInput()
+                    ->withErrors( $line->errors()->first() );
+
+        // complete invoice document
+        if (!$invoice->processIt( Document::ACTION_Complete ))
+            // return document error
+            return back()->withInput()
+                ->withErrors( $invoice->getDocumentError() );
 
         // create receipment
         $receipment = new Receipment([
-            'document_number'   => Receipment::nextDocumentNumber(),
+            'document_number'   => Receipment::nextDocumentNumber() ?? '000001',
             'transacted_at'     => now(),
         ]);
-        $receipment->employee()->associate( $resource->employee );   // TODO: get employee from session
-        $receipment->partnerable()->associate( $resource->partnerable );
-        $receipment->currency()->associate( $resource->currency );
+        $receipment->employee()->associate( $invoice->employee );
+        $receipment->partnerable()->associate( $invoice->partnerable );
+        $receipment->currency()->associate( $invoice->currency );
         if (!$receipment->save())
             // return with errors
             return back()->withInput()
@@ -256,21 +234,59 @@ class PointOfSaleController extends Controller {
         // assign Invoice to Receipment
         $receipmentInvoice = new ReceipmentInvoice([
             'receipment_id'     => $receipment->id,
-            'imputed_amount'    => $resource->total,
+            'imputed_amount'    => $invoice->total,
         ]);
-        $receipmentInvoice->invoice()->associate( $resource );
+        $receipmentInvoice->invoice()->associate( $invoice );
         if (!$receipmentInvoice->save())
             // return with errors
             return back()->withInput()
                 ->withErrors( $receipmentInvoice->errors() );
 
+        // save invoice amount
+        $pendingAmountToPay = $invoice->total;
+
         // create payments
         foreach (array_group($request->input('payments')) as $payment) {
             // ignore empty payments
-            if ($payment['payment_type'] === null || $payment['payment_amount'] === null) continue;
+            if (!isset($payment['payment_type']) || $payment['payment_type'] === null ||
+                !isset($payment['payment_amount']) || $payment['payment_amount'] === null) continue;
 
             // check payment type
             switch ($payment['payment_type']) {
+                case Payment::PAYMENT_TYPE_Card:
+                    $paymentResource = new Card([
+                        // 'card_holder'       => $payment['card_holder'],
+                        'card_number'       => $payment['card_number'],
+                        'is_credit'         => filter_var($payment['is_credit'], FILTER_VALIDATE_BOOLEAN),
+                        'payment_amount'    => $payment['payment_amount'],
+                    ]);
+                    // substract from pending amount to pay
+                    $pendingAmountToPay -= $payment['payment_amount'];
+                    break;
+
+                case Payment::PAYMENT_TYPE_Credit:
+                    $paymentResource = new Credit([
+                        'document_number'   => Credit::nextDocumentNumber() ?? '000001',
+                        'interest'          => $payment['interest'],
+                        'dues'              => $payment['dues'],
+                        'payment_amount'    => $payment['payment_amount'],
+                    ]);
+                    // substract from pending amount to pay
+                    $pendingAmountToPay -= $payment['payment_amount'];
+                    break;
+
+                case Payment::PAYMENT_TYPE_Check:
+                    $paymentResource = new Check([
+                        'bank_id'           => $payment['bank_id'],
+                        'account_holder'    => $payment['account_holder'],
+                        'due_date'          => $payment['due_date'],
+                        'document_number'   => $payment['check_number'],
+                        'payment_amount'    => $payment['payment_amount'],
+                    ]);
+                    // substract from pending amount to pay
+                    $pendingAmountToPay -= $payment['payment_amount'];
+                    break;
+
                 case Payment::PAYMENT_TYPE_Cash:
                     // get open cash
                     if (($cash = pos_settings()->cashBook()->cashes()->open()->first()) === null)
@@ -285,39 +301,13 @@ class PointOfSaleController extends Controller {
                         'currency_id'       => pos_settings()->currency()->id,
                         'cash_type'         => CashLine::CASH_TYPE_Invoice,
                         'description'       => __('pos::pointofsale.payment.cash-line.description', [
-                            'invoice'       => $resource->document_number,
+                            'invoice'       => $invoice->document_number,
                         ]),
-                        'amount'            => $payment['payment_amount'],
+                        'amount'            => $payment['payment_amount'] > $pendingAmountToPay ? $pendingAmountToPay : $payment['payment_amount'],
                     ]);
-                    $paymentResource->referable()->associate( $resource );
-                    break;
-
-                case Payment::PAYMENT_TYPE_Card:
-                    $paymentResource = new Card([
-                        'card_holder'       => $payment['card_holder'],
-                        'card_number'       => $payment['card_number'],
-                        'is_credit'         => filter_var($payment['is_credit'], FILTER_VALIDATE_BOOLEAN),
-                        'payment_amount'    => $payment['payment_amount'],
-                    ]);
-                    break;
-
-                case Payment::PAYMENT_TYPE_Credit:
-                    $paymentResource = new Credit([
-                        'document_number'   => Credit::nextDocumentNumber(),
-                        'interest'          => $payment['interest'],
-                        'dues'              => $payment['dues'],
-                        'payment_amount'    => $payment['payment_amount'],
-                    ]);
-                    break;
-
-                case Payment::PAYMENT_TYPE_Check:
-                    $paymentResource = new Check([
-                        'bank_id'           => $payment['bank_id'],
-                        'account_holder'    => $payment['account_holder'],
-                        'due_date'          => $payment['due_date'],
-                        'document_number'   => $payment['check_number'],
-                        'payment_amount'    => $payment['payment_amount'],
-                    ]);
+                    $paymentResource->referable()->associate( $invoice );
+                    // substract from pending amount to pay
+                    $pendingAmountToPay -= $payment['payment_amount'];
                     break;
 
                 case Payment::PAYMENT_TYPE_CreditNote:
@@ -339,9 +329,9 @@ class PointOfSaleController extends Controller {
             }
 
             // set payment currency
-            $paymentResource->currency()->associate( $resource->currency );
+            $paymentResource->currency()->associate( $invoice->currency );
             // link with partner
-            $paymentResource->partnerable()->associate( $resource->partnerable );
+            $paymentResource->partnerable()->associate( $invoice->partnerable );
             if (!$paymentResource->save())
                 // return with errors
                 return back()->withInput()
@@ -351,7 +341,7 @@ class PointOfSaleController extends Controller {
             $receipmentPayment = new ReceipmentPayment([
                 'receipment_id'     => $receipment->id,
                 'payment_type'      => $payment['payment_type'],
-                'payment_amount'    => $paymentResource->payment_amount ?? $paymentResource->amount,
+                'payment_amount'    => $payment['payment_amount'],
                 // 'used_amount'       => $paymentResource->payment_amount ?? $paymentResource->amount,
             ]);
             $receipmentPayment->currency()->associate( $paymentResource->currency );
@@ -368,11 +358,17 @@ class PointOfSaleController extends Controller {
             return back()->withInput()
                 ->withErrors( $receipment->getDocumentError() );
 
+        // complete inOut document
+        if (!$resource->inOut->processIt( Document::ACTION_Complete ))
+            // return with error
+            return back()->withInput()
+                ->withErrors( $resource->inOut->getDocumentError() );
+
         // commit transaction
         DB::commit();
 
         // redirect to print
-        return redirect()->route('backend.pointofsale.print', $resource);
+        return redirect()->route('backend.pointofsale.print', $invoice);
     }
 
     public function print(Request $request, Invoice $resource) {
@@ -391,6 +387,28 @@ class PointOfSaleController extends Controller {
 
         // show invoice with payment methods and print it
         return view('pos::pointofsale.print', compact('resource'));
+    }
+
+    public function destroy(Request $request, Order $resource) {
+        // check if order is already invoiced
+        if ($resource->is_invoiced)
+            // reject with error
+            return redirect()->route('backend.pointofsale.create')
+                ->withErrors(__('pos::pointofsale.order.already-invoiced'));
+
+        // start a transaction
+        DB::beginTransaction();
+
+        // void order document
+        if (!$resource->processIt( Document::ACTION_Void ))
+            // redirect back with errors
+            return back()->withErrors( $resource->getDocumentError() );
+
+        // confirm transaction
+        DB::commit();
+
+        // redirect to POS create
+        return redirect()->route('backend.pointofsale.create');
     }
 
     private function syncLines(Order $order, array $lines) {
