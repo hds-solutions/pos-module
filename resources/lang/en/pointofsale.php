@@ -3,7 +3,7 @@
     'nav'           => 'Point of Sale',
 
     'title'         => 'Point of Sale',
-    'description'   => 'Point of Sale description',
+    'description'   => '',
 
     'index'         => 'Point of Sale list',
     'create'        => 'Point of Sale',

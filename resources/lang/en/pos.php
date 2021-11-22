@@ -1,9 +1,8 @@
 <?php return [
 
     'nav-group' => 'POS',
-    'nav'       => 'POS Settings',
 
-    'nav'           => 'POS',
+    'nav'           => 'POS Settings',
 
     'title'         => 'POS',
     'description'   => 'POS description',
@@ -15,7 +14,6 @@
     'edit'          => 'Edit POS',
 
     'save'          => 'Save',
-    'save-create'   => 'Save & Import Lines',
     'cancel'        => 'Cancel',
 
     'name'          => [
