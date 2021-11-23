@@ -51,4 +51,14 @@
         '?' => 'Pagos help text',
     ],
 
+    '_show' => [
+        'order-already-invoiced'    => 'El pedido :order ya fue facturado',
+    ],
+
+    'pay'   => [
+        'no-open-cash'          => 'No hay caja del día abierta para el Libro de Caja :cashBook',
+        'cash_line-description' => 'Pago en efectivo de la factura :invoice',
+        'unknown-payment-type'  => 'Unknown payment type ":type"',
+    ],
+
 ];

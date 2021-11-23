@@ -51,4 +51,14 @@
         '?' => 'Payments help text',
     ],
 
+    '_show' => [
+        'order-already-invoiced'    => 'The order :order is already invoiced',
+    ],
+
+    'pay'   => [
+        'no-open-cash'          => 'No open cash for CashBook :cashBook',
+        'cash_line-description' => 'Cash payment of invoice :invoice',
+        'unknown-payment-type'  => 'Unknown payment type ":type"',
+    ],
+
 ];

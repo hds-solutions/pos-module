@@ -172,7 +172,7 @@ return redirect()->route('backend.payment.create');
 
                 case Payment::PAYMENT_TYPE_Credit:
                     $paymentResource = new Credit([
-                        'document_number'   => Credit::nextDocumentNumber() ?? '000001',
+                        'document_number'   => Credit::nextDocumentNumber() ?? '00000001',
                         'interest'          => $payment['interest'],
                         'dues'              => $payment['dues'],
                         'payment_amount'    => $payment['payment_amount'],

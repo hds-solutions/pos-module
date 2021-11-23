@@ -108,7 +108,7 @@ class PointOfSaleController extends Controller {
         // create resource
         $order = Order::make( $request->input() );
         $order->transacted_at = now();
-        $order->document_number = Order::nextDocumentNumber() ?? '000001';
+        $order->document_number = Order::nextDocumentNumber() ?? '00000001';
         $order->partnerable()->associate( Customer::find($request->get('customer_id')) );
         $order->branch()->associate( pos_settings()->branch() );
         $order->warehouse()->associate( pos_settings()->warehouse() );
@@ -144,7 +144,9 @@ class PointOfSaleController extends Controller {
         if ($resource->is_invoiced)
             // reject with error
             return redirect()->route('backend.pointofsale.create')
-                ->withErrors(__('pos::pointofsale.order.already-invoiced'));
+                ->withErrors( __('pos::pointofsale._show.order-already-invoiced', [
+                    'order' => $resource->document_number,
+                ]) );
 
         // eager load resource data
         $resource->load([
@@ -220,7 +222,7 @@ class PointOfSaleController extends Controller {
 
         // create receipment
         $receipment = new Receipment([
-            'document_number'   => Receipment::nextDocumentNumber() ?? '000001',
+            'document_number'   => Receipment::nextDocumentNumber() ?? '00000001',
             'transacted_at'     => now(),
         ]);
         $receipment->employee()->associate( $invoice->employee );
@@ -266,7 +268,7 @@ class PointOfSaleController extends Controller {
 
                 case Payment::PAYMENT_TYPE_Credit:
                     $paymentResource = new Credit([
-                        'document_number'   => Credit::nextDocumentNumber() ?? '000001',
+                        'document_number'   => Credit::nextDocumentNumber() ?? '00000001',
                         'interest'          => $payment['interest'],
                         'dues'              => $payment['dues'],
                         'payment_amount'    => $payment['payment_amount'],
@@ -292,7 +294,7 @@ class PointOfSaleController extends Controller {
                     if (($cash = pos_settings()->cashBook()->cashes()->open()->first()) === null)
                         // return with error
                         return back()->withInput()
-                            ->withErrors(__('pos::pointofsale.payment.no-open-cash', [
+                            ->withErrors(__('pos::pointofsale.pay.no-open-cash', [
                                 'cashBook'  => pos_settings()->cashBook()->name,
                             ]));
 
@@ -300,7 +302,7 @@ class PointOfSaleController extends Controller {
                         'transacted_at'     => $receipment->transacted_at,
                         'currency_id'       => pos_settings()->currency()->id,
                         'cash_type'         => CashLine::CASH_TYPE_Invoice,
-                        'description'       => __('pos::pointofsale.payment.cash-line.description', [
+                        'description'       => __('pos::pointofsale.pay.cash_line-description', [
                             'invoice'       => $invoice->document_number,
                         ]),
                         'amount'            => $payment['payment_amount'] > $pendingAmountToPay ? $pendingAmountToPay : $payment['payment_amount'],
@@ -323,7 +325,7 @@ class PointOfSaleController extends Controller {
 
                 // return with error
                 default: return back()->withInput()
-                    ->withErrors(__('pos::pointofsale.payment.unknown-payment-type', [
+                    ->withErrors(__('pos::pointofsale.pay.unknown-payment-type', [
                         'type'  => $payment['payment_type'],
                     ]));
             }
@@ -394,7 +396,9 @@ class PointOfSaleController extends Controller {
         if ($resource->is_invoiced)
             // reject with error
             return redirect()->route('backend.pointofsale.create')
-                ->withErrors(__('pos::pointofsale.order.already-invoiced'));
+                ->withErrors( __('pos::pointofsale._show.order-already-invoiced', [
+                    'order' => $resource->document_number,
+                ]) );
 
         // start a transaction
         DB::beginTransaction();
