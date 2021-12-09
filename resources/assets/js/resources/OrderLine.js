@@ -110,15 +110,31 @@ export default class OrderLine extends DocumentLine {
         this.container.querySelector('#product').textContent = data.product.name;//+' '+(data.variant.values ?? '');
         this.container.querySelector('#preview').src = data.image ?? null;
 
-        // set price
-        this.container.querySelector('[name="lines[price][]"]').value = data.price ?? null;
+        // request current price quantity
+        Application.$.ajax({
+            method: 'POST',
+            url: '/sales/price',
+            data: {
+                product: data.product.id,
+                variant: data.variant.id ?? null,
+                priceList: this.document.price_list,
+            },
+            // update current price for product+variant on locator
+            success: data => {
+                // check for errors
+                if (data.error) return console.error( data.error );
 
-        // get line quantity
-        let quantity = this.container.querySelector('[name="lines[quantity][]"]');
-        // parse or set to 1 as default
-        quantity.value = !data.price || quantity.value.length > 0 ? quantity.value : 1;
-        // execute change event on quantity field
-        OrderLine.fire('change', quantity);
+                // set price on line container
+                this.container.querySelector('[name="lines[price][]"]').value = data.price ?? null;
+
+                // get line quantity
+                let quantity = this.container.querySelector('[name="lines[quantity][]"]');
+                // parse or set to 1 as default
+                quantity.value = !data.price || quantity.value.length > 0 ? quantity.value : 1;
+                // execute change event on quantity field
+                OrderLine.fire('change', quantity);
+            },
+        });
 
         // disable flag
         this.#loading = false;
