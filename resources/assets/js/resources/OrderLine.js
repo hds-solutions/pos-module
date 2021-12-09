@@ -126,6 +126,8 @@ export default class OrderLine extends DocumentLine {
 
                 // set price on line container
                 this.container.querySelector('[name="lines[price][]"]').value = data.price ?? null;
+                // update price on last selected product
+                this.document.last_product.querySelector('#price').textContent = data.formatted ?? '--';
 
                 // get line quantity
                 let quantity = this.container.querySelector('[name="lines[quantity][]"]');
