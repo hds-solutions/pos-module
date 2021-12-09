@@ -21,7 +21,12 @@ abstract class X_POS extends Base\Model {
         'cash_book_id',
         'stamping_id',
         'customer_id',
+        'price_list_id',
         'prepend',
+        'length',
+        'start',
+        'end',
+        'current',
     ];
 
 }

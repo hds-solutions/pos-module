@@ -11,6 +11,8 @@ import Payment from '../models/Payment';
 
 export default class PointOfSale extends Document {
 
+    submitting = false;
+
     constructor() {
         super();
         this.form = document.querySelector('form');
@@ -21,7 +23,9 @@ export default class PointOfSale extends Document {
         if (this.payments) this.payments.oClassList = Array.from( this.payments.classList.values() ).filter(class_name => (class_name.match(/^text-(left|right)$/) && (class_name.match(/^text-/) || class_name.match(/^bg-/))));
         this.return = this.form.querySelector('[name="return_amount"]');
         this.currency = this.form.querySelector('[name="currency_id"]');
-            this.currency = this.currency !== null ? this.currency.value : null;
+            this.currency = this.currency !== null ? parseInt(this.currency.value) : null;
+        this.price_list = this.form.querySelector('[name="price_list_id"]');
+            this.price_list = this.price_list !== null ? parseInt(this.price_list.value) : null;
         this.noImage = document.querySelector('[name="assets-path"]').content+'backend-module/assets/images/default.jpg';
         this.printable = document.querySelector('[data-printable][data-print="true"]');
         this.transacted_at = this.form.querySelector('#transacted-at');
@@ -132,6 +136,8 @@ export default class PointOfSale extends Document {
     }
 
     pay(e) {
+        if (this.submitting) return;
+        this.submitting = true;
         // check payments amount
         if (this.payments && parseFloat(this.total.value.replace(/\,*/g, '')) > parseFloat(this.payments.value.replace(/\,*/g, ''))) {
             // cancel form submission
@@ -200,16 +206,16 @@ export default class PointOfSale extends Document {
             // get Variant price
             let price = null;
             data.prices.forEach(_price => {
-                // ignore if not current currency
-                if (_price.pivot.currency_id != this.currency) return;
-                price = _price.pivot.price;
+                // ignore if not current price_list
+                if (_price.price_list_id != this.price_list) return;
+                price = _price.price.price;
             });
 
             // if variant dont have price, get Product price
             if (price === null) data.product.prices.forEach(_price => {
-                // ignore if not current currency
-                if (_price.pivot.currency_id != this.currency) return;
-                price = _price.pivot.price;
+                // ignore if not current price_list
+                if (_price.price_list_id != this.price_list) return;
+                price = _price.price.price;
             });
 
             // show last selected product

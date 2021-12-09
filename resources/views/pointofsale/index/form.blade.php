@@ -12,7 +12,7 @@
                     <p class="card-text text-dark mb-0">{{ $setting->warehouse->name }} <small>[{{ $setting->branch->name }}]</small></p>
                     <p class="card-text text-dark mb-0">{{ $setting->cashBook->name }}</p>
                     <p class="card-text text-dark mb-0">{{ $setting->stamping->document_number }}</p>
-                    <p class="card-text text-dark mb-0">{{ $setting->prepend }}xxx</p>
+                    <p class="card-text text-dark mb-0">{{ $setting->prepend }}{{ str_pad('', $setting->length, 'x') }}</p>
                 </div>
             </div>
         </label>

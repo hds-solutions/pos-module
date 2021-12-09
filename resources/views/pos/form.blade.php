@@ -53,10 +53,33 @@
     placeholder="pos::pos.prepend.optional"
     helper="pos::pos.prepend.?" />
 
+<x-backend-form-number :resource="$resource ?? null" name="length"
+    label="pos::pos.length.0"
+    placeholder="pos::pos.length.optional"
+    helper="pos::pos.length.?" />
+
+<x-backend-form-number :resource="$resource ?? null" name="start"
+    label="pos::pos.start.0"
+    placeholder="pos::pos.start.optional"
+    helper="pos::pos.start.?">
+
+    <x-backend-form-number :resource="$resource ?? null" name="end" secondary
+        label="pos::pos.end.0"
+        placeholder="pos::pos.end.optional"
+        helper="pos::pos.end.?" />
+
+</x-backend-form-number>
+
+<x-backend-form-text :resource="$resource ?? null" name="current"
+    label="pos::pos.current.0"
+    placeholder="pos::pos.current.optional"
+    helper="pos::pos.current.?" />
+
 <x-backend-form-foreign :resource="$resource ?? null" name="cash_book_id" required
     :values="backend()->cashBooks()"
 
     foreign="cash_books" foreign-add-label="cash::cash_books.add"
+    filtered-by="[name='currency_id']" filtered-using="currency" append="currency:currency_id"
     data-live-search="true"
 
     label="pos::pos.cash_book_id.0"
@@ -72,6 +95,17 @@
     label="pos::pos.customer_id.0"
     placeholder="pos::pos.customer_id._"
     helper="pos::pos.customer_id.?" />
+
+<x-backend-form-foreign :resource="$resource ?? null" name="price_list_id" required
+    :values="$price_lists"
+
+    foreign="price_lists" foreign-add-label="products-catalog::price_lists.add"
+    filtered-by="[name='currency_id']" filtered-using="currency" append="currency:currency_id"
+    data-live-search="true"
+
+    label="pos::pos.price_list_id.0"
+    placeholder="pos::pos.price_list_id._"
+    {{-- helper="pos::pos.price_list_id.?" --}} />
 
 <x-backend-form-multiple name="employees"
     :values="$employees" :selecteds="isset($resource) ? $resource->employees : []"

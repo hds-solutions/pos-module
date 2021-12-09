@@ -34,7 +34,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-6">@lang('sales::invoice.partnerable_id.0'):</div>
+                        <div class="col-6">@lang('sales::invoice.customer_id.0'):</div>
                         <div class="col-6 h4">{{ $resource->partnerable->fullname }}</div>
                     </div>
 

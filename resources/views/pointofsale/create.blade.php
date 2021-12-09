@@ -14,6 +14,8 @@
                 <span class="mx-1">|</span>
                 <span class="font-weight-normal text-gray-500">{{ pos_settings()->warehouse()->name }}</span>
                 <span class="mx-1">|</span>
+                <span class="font-weight-normal text-gray-500">{{ pos_settings()->priceList()->name }}</span>
+                <span class="mx-1">|</span>
                 <span class="font-weight-bold">{{ pos_settings()->employee()->full_name }}</span>
             </div>
         </div>

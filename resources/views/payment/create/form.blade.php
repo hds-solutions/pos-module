@@ -85,7 +85,7 @@
 </x-backend-form-multiple>
 
 <x-backend-form-multiple name="payments" :values="$customers->pluck('creditNotes')->flatten()" values-as="creditNotes"
-    :extra="isset($resource) ? $resource->payments : []" extra-as="payments"
+    :extra="$cashes" extra-as="cashes"
     :selecteds="isset($resource) ? $resource->payments : []" grouped old-filter-fields="payment_type,payment_amount"
     contents-size="xxl" contents-view="pos::payment.create.payment" data-type="payment"
     class="my-2 px-1" container-class="my-1" card

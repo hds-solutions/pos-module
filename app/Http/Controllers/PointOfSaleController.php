@@ -113,6 +113,7 @@ class PointOfSaleController extends Controller {
         $order->branch()->associate( pos_settings()->branch() );
         $order->warehouse()->associate( pos_settings()->warehouse() );
         $order->currency()->associate( pos_settings()->currency() );
+        $order->priceList()->associate( pos_settings()->priceList() );
         $order->employee()->associate( pos_settings()->employee() );
 
         // save resource
@@ -196,10 +197,11 @@ class PointOfSaleController extends Controller {
         // create inovice from order
         $invoice = Invoice::createFromOrder($resource, [
             'stamping_id'       => ($stamping = pos_settings()->stamping())->getKey(),
-            'document_number'   => $stamping->getNextDocumentNumber( pos_settings()->prepend() ),
+            'document_number'   => pos_settings()->nextDocumentNumber(),
             // POS always sell as cash
             'is_credit'         => false,
         ]);
+
         // check if invoice was created
         if (!$invoice->exists || count($invoice->errors()))
             // return invoice errors
@@ -436,7 +438,7 @@ class PointOfSaleController extends Controller {
                 // TODO: get logged Employee
                 'employee_id'       => $order->employee_id,
                 'currency_id'       => $order->currency->id,
-                'price_reference'   => $variant?->price($order->currency)->pivot->price ?? $product->price($order->currency)->pivot->price,
+                'price_reference'   => $variant?->price( $order->priceList )->price->price ?? $product->price( $order->priceList )->price->price ?? $line['price'],
             ]);
 
             // update line values

@@ -27,13 +27,22 @@ class POSDataTable extends Base\DataTable {
             Column::make('name')
                 ->title( __('pos::pos.name.0') ),
 
-            Column::make('prepend')
-                ->title( __('pos::pos.prepend.0') ),
-
             Column::make('stamping.document_number')
                 ->title( __('pos::pos.stamping_id.0') )
                 ->renderRaw('view:pos')
                 ->data( view('pos::pos.datatable.stamping')->render() ),
+
+            Column::make('prepend')
+                ->title( __('pos::pos.prepend.0') ),
+
+            Column::make('start')
+                ->title( __('pos::pos.start.0') ),
+
+            Column::make('end')
+                ->title( __('pos::pos.end.0') ),
+
+            Column::make('current')
+                ->title( __('pos::pos.current.0') ),
 
             Column::computed('actions'),
         ];

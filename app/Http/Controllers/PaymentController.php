@@ -14,6 +14,7 @@ use HDSSolutions\Laravel\Models\Check;
 use HDSSolutions\Laravel\Models\Credit;
 use HDSSolutions\Laravel\Models\CreditNote;
 use HDSSolutions\Laravel\Models\Customer;
+use HDSSolutions\Laravel\Models\Provider;
 use HDSSolutions\Laravel\Models\Employee;
 use HDSSolutions\Laravel\Models\Invoice;
 use HDSSolutions\Laravel\Models\Order;
@@ -24,6 +25,7 @@ use HDSSolutions\Laravel\Models\PromissoryNote;
 use HDSSolutions\Laravel\Models\Receipment;
 use HDSSolutions\Laravel\Models\ReceipmentInvoice;
 use HDSSolutions\Laravel\Models\ReceipmentPayment;
+use HDSSolutions\Laravel\Models\Cash;
 use HDSSolutions\Laravel\Models\Variant;
 use Illuminate\Support\Facades\DB;
 
@@ -57,20 +59,22 @@ return redirect()->route('backend.payment.create');
         // load employees
         $employees = Employee::all();
         // load customers
-        $customers = Customer::with([
-            // 'addresses', // TODO: Customer.addresses
-            // load available CreditNotes of Customer
+        $customers = Provider::with([
+            // 'addresses', // TODO: Provider.addresses
+            // load available CreditNotes of Provider
             'creditNotes'   => fn($creditNote) => $creditNote->available()->with([ 'identity' ]),
             // load pending invoices of customer
             'invoices'      => fn($invoice) => $invoice->completed()->paid(false),
         ])->get();
+
+        $cashes = Cash::open()->get();
 
         $highs = [
             'document_number'   => Receipment::nextDocumentNumber(),
         ];
 
         // show main form
-        return view('pos::payment.create', compact('employees', 'customers', 'highs'));
+        return view('pos::payment.create', compact('employees', 'customers', 'cashes', 'highs'));
     }
 
     public function store(Request $request) {
@@ -78,7 +82,7 @@ return redirect()->route('backend.payment.create');
         DB::beginTransaction();
         // create resource
         $resource = new Receipment( $request->input() );
-        $resource->partnerable()->associate( Customer::findOrFail($request->partnerable_id) );
+        $resource->partnerable()->associate( Provider::findOrFail($request->partnerable_id) );
 
         // save resource
         if (!$resource->save())
@@ -101,6 +105,9 @@ return redirect()->route('backend.payment.create');
             // return with error
             return back()->withInput()
                 ->withErrors( $resource->getDocumentError() );
+
+dump($resource);
+return;
 
         // commit changes to database
         DB::commit();

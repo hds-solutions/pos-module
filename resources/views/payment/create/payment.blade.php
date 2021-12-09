@@ -20,6 +20,14 @@
     <div class="form-row" data-only="payments[payment_type][]={{ Payment::PAYMENT_TYPE_Cash }}">
         <div class="col">
             {{-- Cash --}}
+            <x-form-foreign name="payments[cash_id][]"
+                :values="$cashes" default="{{ $old['cash_id'] ?? null }}"
+                {{-- :values="$customers->pluck('cashes')->flatten()" --}}
+
+                show="#description"
+
+                placeholder="payments::payment.cash_id._"
+                {{-- helper="payments::payment.cash_id.?" --}} />
         </div>
     </div>
 

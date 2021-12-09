@@ -35,6 +35,30 @@
         'optional' => '(optional) Prefijo',
     ],
 
+    'length'            => [
+        'Tamaño',
+        '_' => 'Tamaño de los números de documentos',
+        '?' => 'Length help text',
+    ],
+
+    'start'             => [
+        'Inicio',
+        '_' => 'Inicio del rango',
+        '?' => 'Inicio del rango help text',
+    ],
+
+    'end'               => [
+        'Fin',
+        '_' => 'Fin del rango',
+        '?' => 'Fin del rango help text',
+    ],
+
+    'current'           => [
+        'Número actual',
+        '_' => 'Número actual',
+        '?' => 'Número actual help text',
+    ],
+
     'customer_id'       => [
         'Cliente',
         '_' => 'Cliente',
@@ -51,6 +75,12 @@
         'Moneda',
         '_' => 'Moneda',
         '?' => 'Moneda help text',
+    ],
+
+    'price_list_id'     => [
+        'Lista de Precios',
+        '_' => 'Lista de Precios',
+        '?' => 'Lista de Precios help text',
     ],
 
     'employees'         => [

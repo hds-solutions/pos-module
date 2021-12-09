@@ -1,6 +1,7 @@
 @include('backend::components.errors')
 
 <input type="hidden" name="currency_id" value="{{ pos_settings()->currency()->id }}">
+<input type="hidden" name="price_list_id" value="{{ pos_settings()->priceList()->id }}">
 
 <div class="row">
     <div class="col-12 col-md-8 d-flex align-items-center min-h-100px">

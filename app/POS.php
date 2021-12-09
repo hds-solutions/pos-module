@@ -9,6 +9,7 @@ use HDSSolutions\Laravel\Models\Customer;
 use HDSSolutions\Laravel\Models\Employee;
 use HDSSolutions\Laravel\Models\Warehouse;
 use HDSSolutions\Laravel\Models\CashBook;
+use HDSSolutions\Laravel\Models\PriceList;
 use HDSSolutions\Laravel\Models\Stamping;
 
 class POS {
@@ -57,8 +58,16 @@ class POS {
         return $this->pos()?->stamping;
     }
 
+    public function priceList():?PriceList {
+        return $this->pos()?->priceList;
+    }
+
     public function prepend():?string {
         return $this->pos()?->prepend;
+    }
+
+    public function nextDocumentNumber():?string {
+        return $this->pos()?->getNextDocumentNumber();
     }
 
     public function customer():?Customer {

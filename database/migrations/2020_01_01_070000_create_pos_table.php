@@ -24,7 +24,12 @@ class CreatePosTable extends Migration {
             $table->foreignTo('CashBook');
             $table->foreignTo('Stamping');
             $table->foreignTo('Customer');
+            $table->foreignTo('PriceList');
             $table->string('prepend')->nullable();
+            $table->unsignedTinyInteger('length');
+            $table->unsignedBigInteger('start');
+            $table->unsignedBigInteger('end');
+            $table->unsignedBigInteger('current')->nullable();
         });
 
         $schema->create('pos_employee', function(Blueprint $table) {

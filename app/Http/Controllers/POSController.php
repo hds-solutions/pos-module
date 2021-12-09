@@ -9,6 +9,7 @@ use HDSSolutions\Laravel\Models\POS as Resource;
 use HDSSolutions\Laravel\Models\Customer;
 use HDSSolutions\Laravel\Models\Employee;
 use HDSSolutions\Laravel\Models\Stamping;
+use HDSSolutions\Laravel\Models\PriceList;
 
 class POSController extends Controller {
 
@@ -40,12 +41,14 @@ class POSController extends Controller {
         // load stampings
         $stampings = Stamping::ordered()->isSale()->get();
         // load customers
-        $customers = Customer::all();
+        $customers = Customer::ordered()->get();
         // load employees
-        $employees = Employee::all();
+        $employees = Employee::ordered()->get();
+        // load PriceLists
+        $price_lists = PriceList::ordered()->isSale()->get();
 
         // show create form
-        return view('pos::pos.create', compact('stampings', 'customers', 'employees'));
+        return view('pos::pos.create', compact('stampings', 'customers', 'employees', 'price_lists'));
     }
 
     public function store(Request $request) {
@@ -83,15 +86,18 @@ class POSController extends Controller {
         // load stampings
         $stampings = Stamping::ordered()->isSale()->get();
         // load customers
-        $customers = Customer::all();
+        $customers = Customer::ordered()->get();
         // load employees
-        $employees = Employee::all();
+        $employees = Employee::ordered()->get();
+        // load PriceLists
+        $price_lists = PriceList::ordered()->isSale()->get();
 
         // show edit form
         return view('pos::pos.edit', compact('resource',
             'stampings',
             'customers',
             'employees',
+            'price_lists',
         ));
     }
 

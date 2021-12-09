@@ -16,7 +16,7 @@
     <div class="col">
         {{-- @include('pos::pointofsale.create.form.product') --}}
         <button class="btn btn-outline-info d-none"
-            data-printable="{{ route('backend.invoices.print', $resource) }}" data-print="true">
+            data-printable="{{ route('backend.sales.invoices.print', $resource) }}" data-print="true">
             <i class="fas fa-print"></i>
         </button>
     </div>

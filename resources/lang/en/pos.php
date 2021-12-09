@@ -35,6 +35,30 @@
         'optional' => '(optional) Prepend',
     ],
 
+    'length'            => [
+        'Length',
+        '_' => 'Generated document number Length',
+        '?' => 'Length help text',
+    ],
+
+    'start'             => [
+        'Start',
+        '_' => 'Start document number',
+        '?' => 'Start document number help text',
+    ],
+
+    'end'               => [
+        'End',
+        '_' => 'End document number',
+        '?' => 'End document number help text',
+    ],
+
+    'current'           => [
+        'Current document number',
+        '_' => 'Current document number',
+        '?' => 'Current document number help text',
+    ],
+
     'customer_id'       => [
         'Customer',
         '_' => 'Customer',
@@ -51,6 +75,12 @@
         'Currency',
         '_' => 'Currency',
         '?' => 'Currency help text',
+    ],
+
+    'price_list_id'     => [
+        'Price List',
+        '_' => 'Price List',
+        '?' => 'Price List help text',
     ],
 
     'employees'         => [
