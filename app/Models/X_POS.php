@@ -29,4 +29,11 @@ abstract class X_POS extends Base\Model {
         'current',
     ];
 
+    protected static array $rules = [
+        'length'            => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'min:1' ],
+        'start'             => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'lt:end' ],
+        'end'               => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'gt:start' ],
+        'current'           => [ 'sometimes', 'nullable', 'numeric', 'gte:start', 'lte:end' ],
+    ];
+
 }
